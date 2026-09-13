@@ -1,0 +1,98 @@
+HISTORIA QUIZ — CAMBIOS Y MOTIVOS
+==================================
+
+1. package.json (nuevo)
+   - Qué: dependencia "ws" y scripts npm (start, stop, restart).
+   - Por qué: el servidor no arrancaba sin el módulo WebSocket; faltaba gestión del proyecto con npm.
+
+2. admin.html movido a public/admin.html
+   - Qué: el archivo salió de private/ y quedó en public/.
+   - Por qué: server.js solo sirve archivos desde public/; el panel de administración daba 404.
+
+3. public/index.html (nuevo)
+   - Qué: redirección automática a docente.html.
+   - Por qué: al abrir http://localhost:3000/ aparecía "Not found".
+
+4. server.js — getLocalIP()
+   - Qué: nueva lógica para elegir la IP (prioriza Wi-Fi/Ethernet, ignora 169.254 y adaptadores virtuales).
+   - Por qué: el QR y el mensaje "Los alumnos entran" mostraban IPs incorrectas (Tailscale, VMware, etc.) en lugar de la IP de la red local.
+
+5. server.js — iniciar_juego
+   - Qué: ya no borra estado.jugadores; solo reinicia puntajes y estado de respuesta. Envía la lista de jugadores al docente.
+   - Por qué: al tocar "Iniciar / Reiniciar" el contador de alumnos pasaba a 0 y el juego no funcionaba con quienes ya estaban conectados.
+
+6. server.js — desconexión de alumnos (ws close)
+   - Qué: elimina al jugador de estado.jugadores y envía ranking actualizado al docente.
+   - Por qué: los alumnos desconectados seguían contando en el servidor.
+
+7. server.js — error EADDRINUSE
+   - Qué: mensaje claro en español si el puerto 3000 está ocupado.
+   - Por qué: al reiniciar el servidor el error no explicaba qué hacer.
+
+8. public/docente.html — reiniciarUI y juego_reiniciado
+   - Qué: mantiene contador y nombres de alumnos; habilita "Siguiente pregunta" tras iniciar; actualiza ranking al salir un alumno.
+   - Por qué: la UI borraba la lista al iniciar y no se podía lanzar la primera pregunta (botón deshabilitado).
+
+9. scripts/stop-port.js (nuevo)
+   - Qué: script que libera el puerto 3000 en Windows/Linux.
+   - Por qué: quedaban procesos Node colgados y npm start fallaba con "address already in use".
+
+10. package.json — scripts stop y restart
+    - Qué: npm run stop y npm run restart.
+    - Por qué: facilitar cerrar el servidor viejo y volver a arrancar sin errores de puerto.
+
+11. server.js — informe final del juego (fin_juego)
+    - Qué: cada alumno guarda un historial por pregunta (texto, respuesta elegida, si acertó o no). Al terminar el juego el docente recibe nombre, puntos y detalle de cada ronda.
+    - Por qué: el docente necesitaba revisar qué respondió cada alumno, no solo el puntaje final.
+
+12. public/docente.html — resumen final desplegable
+    - Qué: al finalizar el juego cada alumno aparece en un acordeón (<details>): nombre y puntos visibles; al hacer clic se despliega el listado de preguntas y respuestas.
+    - Por qué: mantener la pantalla ordenada y que el docente abra solo el alumno que quiera revisar.
+
+13. Servidor y docente.html (Panel de juego)
+    - Qué: Se cambió el contador numérico "Respondieron 0/2" por una lista dinámica que separa a los alumnos en "Ya respondieron" (en verde con ✓) y "Esperando respuesta".
+    - Por qué: Para que el docente pueda ver en tiempo real exactamente qué alumnos ya contestaron y quién falta por responder.
+
+14. Seguridad — Servidor (server.js)
+    - Qué: Implementación de token administrativo `HISTORIA_ADMIN_TOKEN` en variables de entorno, cabecera de API `X-Admin-Token`, límite estricto de payload a 512 KB, verificación de tipo/secreto de conexión en WebSocket (`docente_conecta`) y validación estricta de las respuestas del alumno.
+    - Por qué: Evitar cargas masivas de datos (DoS), impedir que cualquiera envíe comandos administrativos o manipule puntajes mediante WebSockets, y proteger las bases de datos de preguntas.
+
+15. Seguridad y Responsive — Panel de Administración (admin.html)
+    - Qué: Inclusión de modal de autenticación persistente con `localStorage`, sanitización de todas las tablas con `escapeHTML` y ajuste de cabecera responsive para dispositivos móviles.
+    - Por qué: Prevenir XSS por bancos importados dañinos, proteger el acceso a las preguntas y asegurar que la interfaz sea navegable y operable en pantallas pequeñas.
+
+16. Seguridad y Orden de DOM — Panel del Docente (docente.html)
+    - Qué: Integración del modal de autenticación con bloqueo en el inicio (`init`), sanitización del podio, lobby de alumnos y resúmenes mediante `esc(s)`. Se reubicó el HTML de `#modal-auth` antes de `<script>` para corregir una excepción de carga nula del DOM.
+    - Por qué: Asegurar que solo el docente con la clave inicie o modifique la partida, evitar ataques XSS a través de nombres de alumnos inyectados, y garantizar la correcta carga del modal de contraseña.
+
+17. Seguridad — Panel del Alumno (alumno.html)
+    - Qué: Sanitización de inputs y textos utilizando una función de escape HTML `esc(s)` antes de insertarlos en el DOM mediante `innerHTML`.
+    - Por qué: Prevenir que nombres maliciosos de otros alumnos ejecuten código JavaScript (XSS) en las pantallas finales de los demás alumnos conectados.
+
+18. Flujo del Juego — Inicio directo (server.js)
+    - Qué: Al presionar "Iniciar / Reiniciar", el servidor ahora limpia las respuestas previas, reinicia los puntajes e inicia la primera pregunta del banco de manera automática e inmediata.
+    - Por qué: Elimina el paso intermedio redundante de tener que hacer clic en "Siguiente pregunta" para lanzar la primera ronda tras reiniciar el juego.
+
+19. Tiempo Configurable por Pregunta (server.js, docente.html, alumno.html)
+    - Qué: Se agregó un selector de tiempo (10s a 60s) en el panel del docente y se modificaron el servidor y las pantallas de los alumnos para sincronizar dinámicamente la duración máxima por pregunta.
+    - Por qué: Permite al docente ajustar el ritmo del juego según la complejidad de las preguntas o la edad de los alumnos.
+
+20. Sala de Espera en Tiempo Real para Alumnos (alumno.html, server.js)
+    - Qué: Se implementaron transmisiones WebSocket de entrada y salida de alumnos para mostrar una lista de compañeros conectados en tiempo real directamente en la pantalla de espera de los alumnos.
+    - Por qué: Aumenta la interacción de los alumnos antes de iniciar la partida, emulando la experiencia de salas de espera tipo Kahoot.
+
+21. Modo Pausa / Reanudación (server.js, docente.html, alumno.html)
+    - Qué: Se incorporó un botón en el panel de control del docente para pausar y reanudar el temporizador de la pregunta en curso, deteniendo el reloj, inhabilitando las respuestas de alumnos y reanudando desde el mismo segundo al presionar reanudar.
+    - Por qué: Permite al docente congelar el juego para realizar una aclaración, explicar algún concepto histórico, o restablecer el orden en el aula antes de que se termine el tiempo.
+
+22. Botón de Cerrar Sesión (admin.html, docente.html)
+    - Qué: Se añadieron botones de "Salir" visibles tanto en móvil como en escritorio que eliminan el token de localStorage y recargan la página.
+    - Por qué: Permite salir de los paneles administrativos de forma segura y volver a solicitar la clave de acceso.
+
+23. Botón Volver al Menú Principal (docente.html, alumno.html, server.js)
+    - Qué: Se agregó un botón al finalizar el juego para regresar a la sala de espera (lobby). Resetea los puntajes e historiales de los alumnos en el servidor y redirige a los participantes a la pantalla de espera, manteniendo su conexión activa.
+    - Por qué: Permite reiniciar una nueva partida con los mismos alumnos conectados sin necesidad de que vuelvan a escanear el QR e ingresar sus nombres.
+
+24. Reorganización y Separación de Activos (public/css, public/js)
+    - Qué: Se extrajeron todos los bloques de estilos internos (`<style>`) y scripts internos (`<script>`) de los archivos HTML (`admin.html`, `alumno.html`, `docente.html`) y se ubicaron en archivos individuales ordenados dentro de `public/css/` y `public/js/`.
+    - Por qué: Mejora la modularidad, facilita el mantenimiento del código, limpia las páginas HTML de lógica repetitiva y permite una estructura limpia y profesional del proyecto.

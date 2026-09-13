@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Quiz – Alumno</title>
+<link rel="stylesheet" href="css/alumno.css?v=et29-design-2">
+</head>
+<body>
+
+<!-- PANTALLA: cuenta (login / registro con correo institucional) -->
+<div class="screen activa" id="s-cuenta">
+  <header class="student-header">
+    <div class="brand-lockup">
+      <span class="brand-mark">ET29</span>
+      <span>TRIVIA <strong>ET29</strong></span>
+    </div>
+    <a class="profes-link" href="docente.html" aria-label="Ingresar al panel de profesores">PROFES</a>
+  </header>
+
+  <div class="world-map" aria-hidden="true"><span>✦</span><span>◌</span><span>✧</span></div>
+  <div class="hero-emblem" aria-label="Escuela Técnica 29"><img src="assets/logo-et29.png" alt="Escuela Técnica N.º 29"></div>
+
+  <div class="hero-copy">
+    <p class="eyebrow">CIENCIAS SOCIALES · 1°, 2° Y 3° AÑO</p>
+    <h1>Aprendé, competí<br>y superate</h1>
+  </div>
+
+  <section class="quick-start" aria-label="Comenzar partida">
+    <div class="section-kicker"><span class="kicker-icon">▶</span><span>LISTO PARA JUGAR</span></div>
+    <button class="btn btn-gold btn-main" data-action="mostrar-cuenta">JUGAR AHORA <span aria-hidden="true">→</span></button>
+    <div class="join-home-card">
+      <div class="join-home-title"><span>♧</span><strong>UNIRME A UNA PARTIDA</strong></div>
+      <div class="join-home-row"><span aria-hidden="true">⌕</span><input id="home-input-codigo" inputmode="numeric" maxlength="6" placeholder="INGRESAR CÓDIGO" aria-label="Código de partida"><button type="button" data-action="usar-codigo-inicio" aria-label="Enviar código">➤</button></div>
+      <p class="nav-error" id="home-code-error"></p>
+    </div>
+  </section>
+
+  <section class="account-panel" id="account-panel" aria-label="Acceso de alumno">
+    <div class="cuenta-tabs">
+      <button class="btn btn-tab activa" id="tab-login" data-action="mostrar-tab-login">Ingresar</button>
+      <button class="btn btn-tab" id="tab-registro" data-action="mostrar-tab-registro">Crear cuenta</button>
+    </div>
+
+    <div id="form-login">
+      <input class="input-nombre" id="login-email" type="email" placeholder="Correo institucional" autocomplete="username">
+      <input class="input-nombre" id="login-password" type="password" placeholder="Contraseña" autocomplete="current-password">
+      <div class="error-msg" id="error-login" style="display: none;"></div>
+      <button class="btn btn-gold" id="btn-login" data-action="login">Ingresar</button>
+    </div>
+
+    <div id="form-registro" style="display:none">
+      <input class="input-nombre" id="registro-email" type="email" placeholder="Correo institucional" autocomplete="username">
+      <input class="input-nombre" id="registro-nombre-usuario" type="text" placeholder="Nombre para el ranking" maxlength="24" autocomplete="off">
+      <input class="input-nombre" id="registro-password" type="password" placeholder="Contraseña (mínimo 8 caracteres)" autocomplete="new-password">
+      <div class="error-msg" id="error-registro" style="display: none;"></div>
+      <button class="btn btn-gold" id="btn-registro" data-action="registro">Crear cuenta</button>
+    </div>
+  </section>
+
+  <p class="school-line">Escuela Técnica N.º 29 · Reconquista de Buenos Aires</p>
+  <nav class="bottom-nav" aria-label="Navegación del alumno">
+    <button class="nav-item activo" type="button" data-action="volver-inicio"><span>⌂</span>Inicio</button>
+    <button class="nav-item" type="button" data-action="mostrar-partidas"><span>◈</span>Partidas</button>
+    <button class="nav-item" type="button" data-action="mostrar-ranking"><span>♛</span>Ranking</button>
+    <button class="nav-item" type="button" data-action="mostrar-perfil"><span>○</span>Perfil</button>
+  </nav>
+</div>
+
+<!-- PANTALLA: partidas -->
+<div class="screen app-section" id="s-partidas">
+  <header class="compact-header"><button class="back-button" type="button" data-action="volver-inicio" aria-label="Volver al inicio">←</button><span>Partidas</span><span class="header-spacer"></span></header>
+  <div class="section-heading"><p class="eyebrow">SALA DE EXPLORADORES</p><h1>Elegí tu próxima aventura</h1><p>Entrá a una partida o empezá un recorrido individual.</p></div>
+  <button class="btn btn-gold btn-main" data-action="jugar-individual">▶ JUGAR PARTIDA INDIVIDUAL <span aria-hidden="true">→</span></button>
+  <section class="app-list-section"><p class="list-label">PARTIDAS ACTIVAS</p><div class="adventure-card"><span class="adventure-icon">▦</span><span><strong>Historia y territorio</strong><small>4 jugadores · esperando</small></span><b>›</b></div><div class="adventure-card"><span class="adventure-icon sun">▥</span><span><strong>Viaje por el mundo antiguo</strong><small>0 jugadores · esperando</small></span><b>›</b></div></section>
+  <section class="join-code-card"><p class="list-label">UNIRME CON CÓDIGO</p><div class="join-code-row"><span>⌕</span><input id="nav-input-codigo" inputmode="numeric" maxlength="6" placeholder="Ej: ET29-482" aria-label="Código de partida"><button type="button" data-action="usar-codigo-nav">➤</button></div><p class="nav-error" id="nav-code-error"></p></section>
+  <nav class="bottom-nav" aria-label="Navegación del alumno"><button class="nav-item" type="button" data-action="volver-inicio"><span>⌂</span>Inicio</button><button class="nav-item activo" type="button" data-action="mostrar-partidas"><span>◈</span>Partidas</button><button class="nav-item" type="button" data-action="mostrar-ranking"><span>♛</span>Ranking</button><button class="nav-item" type="button" data-action="mostrar-perfil"><span>○</span>Perfil</button></nav>
+</div>
+
+<!-- PANTALLA: ranking -->
+<div class="screen app-section" id="s-ranking">
+  <header class="compact-header"><button class="back-button" type="button" data-action="volver-inicio" aria-label="Volver al inicio">←</button><span>Ranking</span><span class="header-spacer"></span></header>
+  <div class="section-heading"><p class="eyebrow">CLASIFICACIÓN</p><h1>Tu lugar en la historia</h1><p>Compará tus resultados con tu equipo.</p></div>
+  <div class="ranking-summary"><span>♛</span><strong id="nav-ranking-puntaje">0</strong><small>puntos acumulados</small></div>
+  <section class="app-list-section ranking-screen-list"><p class="list-label">ÚLTIMA PARTIDA</p><div id="nav-ranking-list"><p class="empty-nav-state">Jugá una partida para aparecer en el ranking.</p></div></section>
+  <nav class="bottom-nav" aria-label="Navegación del alumno"><button class="nav-item" type="button" data-action="volver-inicio"><span>⌂</span>Inicio</button><button class="nav-item" type="button" data-action="mostrar-partidas"><span>◈</span>Partidas</button><button class="nav-item activo" type="button" data-action="mostrar-ranking"><span>♛</span>Ranking</button><button class="nav-item" type="button" data-action="mostrar-perfil"><span>○</span>Perfil</button></nav>
+</div>
+
+<!-- PANTALLA: perfil -->
+<div class="screen app-section" id="s-perfil">
+  <header class="compact-header"><button class="back-button" type="button" data-action="volver-inicio" aria-label="Volver al inicio">←</button><span>Perfil</span><span class="header-spacer"></span></header>
+  <section class="profile-card"><div class="profile-avatar">○</div><p class="eyebrow">EXPLORADOR ET29</p><h1 id="perfil-nombre">Tu perfil</h1><p>Tu aventura por las ciencias sociales</p></section>
+  <div class="profile-stats"><div><strong id="perfil-puntos">0</strong><small>Puntos</small></div><div><strong id="perfil-partidas">0</strong><small>Partidas</small></div><div><strong id="perfil-aciertos">0%</strong><small>Aciertos</small></div></div>
+  <section class="app-list-section badges-section"><p class="list-label">LOGROS DESBLOQUEADOS</p><div class="badge-card"><span>♙</span><strong>Primer paso</strong><small>Completaste tu primera partida</small></div><div class="badge-card locked"><span>◉</span><strong>Cartógrafo</strong><small>Respondé 10 preguntas de geografía</small></div></section>
+  <button class="btn btn-gold btn-main" data-action="continuar-recorrido">▶ CONTINUAR RECORRIDO <span aria-hidden="true">→</span></button>
+  <button class="btn btn-ghost" data-action="cerrar-sesion">Cerrar sesión</button>
+  <nav class="bottom-nav" aria-label="Navegación del alumno"><button class="nav-item" type="button" data-action="volver-inicio"><span>⌂</span>Inicio</button><button class="nav-item" type="button" data-action="mostrar-partidas"><span>◈</span>Partidas</button><button class="nav-item" type="button" data-action="mostrar-ranking"><span>♛</span>Ranking</button><button class="nav-item activo" type="button" data-action="mostrar-perfil"><span>○</span>Perfil</button></nav>
+</div>
+
+<!-- PANTALLA: unirse (código de partida) -->
+<div class="screen" id="s-unirse">
+  <header class="compact-header"><button class="back-button" type="button" data-action="volver-inicio" aria-label="Volver al inicio">←</button><span>Unirse a una partida</span><span class="header-spacer"></span></header>
+  <div class="screen-icon">⌕</div>
+  <h1>Tu próxima aventura</h1>
+  <p>Ingresá el código de 6 dígitos que te dio el docente.</p>
+  <div class="nombre-row">
+    <p class="nombre-display" id="cuenta-nombre-display">–</p>
+    <button class="btn-icon" id="btn-cerrar-sesion" data-action="cerrar-sesion" title="Cerrar sesión">🚪</button>
+  </div>
+  <input class="input-nombre code-input" id="input-codigo" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="482731" maxlength="6" autocomplete="off">
+  <div class="error-msg" id="error-nombre" style="display: none;"></div>
+  <button class="btn btn-gold btn-main" id="btn-entrar" data-action="entrar">UNIRME AL JUEGO <span aria-hidden="true">→</span></button>
+  <button class="btn btn-ghost" type="button" data-action="volver-inicio">Volver al inicio</button>
+</div>
+
+<!-- PANTALLA: sala de espera -->
+<div class="screen" id="s-espera">
+  <header class="compact-header"><span class="brand-lockup"><img class="brand-mark" src="assets/logo-et29.png" alt="Escuela Técnica 29">TRIVIA <strong>ET29</strong></span><span class="status-pill">SALA</span></header>
+  <div class="pulso">⏳</div>
+  <h1>Esperando a tu equipo</h1>
+  <div class="nombre-row">
+    <p class="nombre-display" id="nombre-display">–</p>
+    <button class="btn-icon" id="btn-cambiar-nombre" data-action="toggle-cambiar-nombre" title="Cambiar nombre">✏️</button>
+  </div>
+  <div class="cambiar-nombre-row" id="cambiar-nombre-row" style="display:none">
+    <input class="input-nombre input-chico" id="input-cambiar-nombre" type="text" placeholder="Nuevo nombre..." maxlength="20">
+    <button class="btn btn-chico" id="btn-confirmar-nombre" data-action="cambiar-nombre">Cambiar</button>
+    <button class="btn btn-chico btn-cancel" data-action="toggle-cambiar-nombre">✕</button>
+  </div>
+  <p class="espera-instruccion">Estás dentro. Esperá que el docente inicie el juego...</p>
+  <div class="sala-espera-card">
+    <h3 class="sala-espera-header">
+      <span>Compañeros en la sala</span>
+      <span id="cant-espera" class="sala-espera-contador">0</span>
+    </h3>
+    <div id="lista-espera" class="sala-espera-lista"></div>
+  </div>
+</div>
+
+<!-- PANTALLA: pregunta -->
+<div class="screen" id="s-pregunta">
+  <header class="game-header"><button class="back-button" type="button" data-action="salir-partida" aria-label="Salir de la partida">×</button><span class="brand-lockup"><img class="brand-mark" src="assets/logo-et29.svg" alt="Escuela Técnica 29">TRIVIA <strong>ET29</strong></span><span class="score-pill">♛ 1.230</span></header>
+  <div class="question-meta"><span>HISTORIA ARGENTINA</span><strong>PREGUNTA 1 DE 5</strong></div>
+  <div class="timer-line"><div class="timer-bar-track"><div class="timer-bar" id="timer-bar"></div></div><div class="timer-num" id="timer-num">20s</div></div>
+  <div class="pausa-alerta" id="pausa-alerta">
+    ⚠️ JUEGO PAUSADO POR EL DOCENTE
+  </div>
+  <article class="question-card"><span class="question-tag">✦ Historia Argentina</span><h2 id="pregunta-txt">–</h2><div id="pregunta-media" style="display:none"></div><p>Elegí la respuesta correcta</p></article>
+  <div class="opciones" id="opciones-container"></div>
+  <div class="game-footer"><span>↳ Racha: <strong>1 pregunta</strong></span><button type="button" class="btn btn-ghost" data-action="salir-partida">× Salir de la partida</button></div>
+</div>
+
+<!-- PANTALLA: respondió, esperando -->
+<div class="screen" id="s-respondio">
+  <header class="compact-header"><button class="back-button" type="button" data-action="salir-partida" aria-label="Salir de la partida">×</button><span>Partida</span><span class="header-spacer"></span></header>
+  <div class="check-grande">✅</div>
+  <h2>¡Respuesta enviada!</h2>
+  <p>Esperá el resultado...</p>
+  <button class="btn btn-ghost" type="button" data-action="salir-partida">× Salir de la partida</button>
+</div>
+
+<!-- PANTALLA: resultado de la pregunta -->
+<div class="screen" id="s-resultado">
+  <header class="compact-header"><button class="back-button" type="button" data-action="salir-partida" aria-label="Salir de la partida">×</button><span>Resultado</span><span class="header-spacer"></span></header>
+  <div class="resultado-icono result-medal" id="res-icono">🤔</div>
+  <h2 id="res-titulo">–</h2>
+  <div class="pts-badge" id="res-pts" style="display:none">+100 pts</div>
+  <p class="resultado-desc" id="res-desc">–</p>
+  <p class="resultado-espera-txt">Esperá la siguiente pregunta...</p>
+  <button class="btn btn-ghost" type="button" data-action="salir-partida">× Salir de la partida</button>
+</div>
+
+<!-- PANTALLA: fin del juego -->
+<div class="screen" id="s-fin">
+  <header class="compact-header"><button class="back-button" type="button" data-action="volver-inicio" aria-label="Volver al inicio">←</button><span>Resultado final</span><span class="header-spacer"></span></header>
+  <div class="flag">🏆</div>
+  <p class="eyebrow">RECORRIDO COMPLETADO</p>
+  <h1>¡Excelente viaje!</h1>
+  <p class="fin-subtitulo">Terminaste tu partida de Ciencias Sociales.</p>
+  <section class="fin-summary-card"><p class="eyebrow">PUNTAJE FINAL</p><strong id="fin-puntaje">0</strong><small>+100 puntos en esta partida</small></section>
+  <div class="fin-metrics"><div><strong id="fin-correctas">0/0</strong><small>Respuestas correctas</small></div><div><strong id="fin-posicion">#-</strong><small>En el ranking</small></div><div><strong id="fin-precision">0%</strong><small>Precisión</small></div></div>
+  <div class="fin-ranking-seccion">
+    <h3 class="fin-seccion-titulo">🏅 Ranking de la ronda</h3>
+    <div class="ranking-final" id="ranking-final"></div>
+  </div>
+  <div class="fin-ranking-seccion">
+    <h3 class="fin-seccion-titulo">🏆 Ranking general (acumulado)</h3>
+    <div class="ranking-final" id="ranking-general-final"></div>
+  </div>
+  <div class="mi-historial" id="mi-historial" style="display:none">
+    <h3 class="fin-seccion-titulo">📝 Mis respuestas</h3>
+    <div id="mi-historial-lista"></div>
+  </div>
+  <button class="btn btn-gold" data-action="volver-al-lobby" data-testid="btn-jugar-de-nuevo">Jugar de nuevo</button>
+  <button class="btn btn-ghost" data-action="volver-inicio">⌂ Volver al inicio</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/entrypoints/alumno.entry.js?v=et29-design-2"></script>
+</body>
+</html>

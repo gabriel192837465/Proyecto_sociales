@@ -1,0 +1,43 @@
+# Dependencias
+node_modules/
+package-lock.json
+.windsurf/
+.agents/
+.opencode/
+.atl/
+_bmad/
+_bmad/**
+# Variables de entorno
+.env
+.kilo/
+
+# Cobertura de tests
+coverage/
+
+# Archivos del sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Persistencia local de juego
+estado-juego.json
+
+# SQLite database + journal files
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+
+# Temp files (atomic write)
+*.tmp
+
+# Playwright
+test-results/
+
+# Test artifacts
+_bmad-output/
+*.corrupt-*
+

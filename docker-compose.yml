@@ -1,0 +1,29 @@
+services:
+  historia-quiz:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - HISTORIA_ADMIN_TOKEN=${HISTORIA_ADMIN_TOKEN:?Se requiere HISTORIA_ADMIN_TOKEN}
+      # OBLIGATORIO con persistencia (volumen quiz-data + crash-recovery): sin
+      # secreto fijo, cada reinicio invalida las cookies firmadas (HMAC) y los
+      # alumnos reconectados chocan con error_nombre contra el jugador fantasma
+      # del snapshot restaurado — la partida se recupera sin alumnos.
+      - HISTORIA_COOKIE_SECRET=${HISTORIA_COOKIE_SECRET:?Se requiere HISTORIA_COOKIE_SECRET}
+      - PORT=3000
+      - INTERFACE=eth0
+      - LOG_LEVEL=info
+      - NODE_ENV=production
+    volumes:
+      - quiz-data:/app/data
+    restart: unless-stopped
+    stop_grace_period: 10s
+    healthcheck:
+      test: wget -qO- http://localhost:3000/api/health || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  quiz-data:
