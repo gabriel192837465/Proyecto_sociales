@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 pregunta;opcionA;opcionB;opcionC;opcionD;correcta;epoca
 ¿En qué año se produjo la Revolución de Mayo?;1810;1816;1806;1820;A;Independencia
 ¿Quién lideró el cruce de los Andes para liberar Chile?;Manuel Belgrano;Martín de Güemes;José de San Martín;Bernardino Rivadavia;C;Independencia
 ¿En qué año se declaró la Independencia argentina?;1810;1816;1820;1813;B;Independencia
 ¿Quién creó la bandera argentina?;José de San Martín;Manuel Belgrano;Mariano Moreno;Juan José Castelli;B;Independencia
 ¿En qué ciudad se firmó la Independencia?;Buenos Aires;Córdoba;Tucumán;Salta;C;Independencia
+=======
+pregunta;opcionA;opcionB;opcionC;opcionD;correcta;epoca
+¿En qué año se produjo la Revolución de Mayo?;1810;1816;1806;1820;A;Independencia
+¿Quién lideró el cruce de los Andes para liberar Chile?;Manuel Belgrano;Martín de Güemes;José de San Martín;Bernardino Rivadavia;C;Independencia
+¿En qué año se declaró la Independencia argentina?;1810;1816;1820;1813;B;Independencia
+¿Quién creó la bandera argentina?;José de San Martín;Manuel Belgrano;Mariano Moreno;Juan José Castelli;B;Independencia
+¿En qué ciudad se firmó la Independencia?;Buenos Aires;Córdoba;Tucumán;Salta;C;Independencia
+>>>>>>> origin/main

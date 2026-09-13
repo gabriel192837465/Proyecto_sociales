@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -201,3 +202,101 @@
 <script type="module" src="/js/entrypoints/alumno.entry.js?v=et29-design-2"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Quiz – Alumno</title>
+<link rel="stylesheet" href="css/alumno.css">
+</head>
+<body>
+
+<!-- PANTALLA: unirse -->
+<div class="screen activa" id="s-unirse">
+  <div class="flag">🇦🇷</div>
+  <h1>Historia Quiz</h1>
+  <p>¡Ingresá tu nombre para unirte a la competencia!</p>
+  <input class="input-nombre" id="input-nombre" type="text" placeholder="Tu nombre..." maxlength="20" autocomplete="off">
+  <script>try { var n = localStorage.getItem("historia_quiz_nombre"); if (n) document.getElementById("input-nombre").value = n; } catch(e){}</script>
+  <div class="error-msg" id="error-nombre" style="display: none;"></div>
+  <button class="btn btn-gold" id="btn-entrar" data-action="entrar">Unirme al juego</button>
+</div>
+
+<!-- PANTALLA: sala de espera -->
+<div class="screen" id="s-espera">
+  <div class="pulso">⏳</div>
+  <h1>Historia Quiz</h1>
+  <div class="nombre-row">
+    <p class="nombre-display" id="nombre-display">–</p>
+    <button class="btn-icon" id="btn-cambiar-nombre" data-action="toggle-cambiar-nombre" title="Cambiar nombre">✏️</button>
+  </div>
+  <div class="cambiar-nombre-row" id="cambiar-nombre-row" style="display:none">
+    <input class="input-nombre input-chico" id="input-cambiar-nombre" type="text" placeholder="Nuevo nombre..." maxlength="20">
+    <button class="btn btn-chico" id="btn-confirmar-nombre" data-action="cambiar-nombre">Cambiar</button>
+    <button class="btn btn-chico btn-cancel" data-action="toggle-cambiar-nombre">✕</button>
+  </div>
+  <p class="espera-instruccion">Estás dentro. Esperá que el docente inicie el juego...</p>
+  <div class="sala-espera-card">
+    <h3 class="sala-espera-header">
+      <span>Compañeros en la sala</span>
+      <span id="cant-espera" class="sala-espera-contador">0</span>
+    </h3>
+    <div id="lista-espera" class="sala-espera-lista"></div>
+  </div>
+</div>
+
+<!-- PANTALLA: pregunta -->
+<div class="screen" id="s-pregunta">
+  <div class="timer-bar-track"><div class="timer-bar" id="timer-bar"></div></div>
+  <div class="timer-num" id="timer-num">20s</div>
+  <div class="pausa-alerta" id="pausa-alerta">
+    ⚠️ JUEGO PAUSADO POR EL DOCENTE
+  </div>
+  <h2 id="pregunta-txt">–</h2>
+  <div class="opciones" id="opciones-container"></div>
+</div>
+
+<!-- PANTALLA: respondió, esperando -->
+<div class="screen" id="s-respondio">
+  <div class="check-grande">✅</div>
+  <h2>¡Respuesta enviada!</h2>
+  <p>Esperá el resultado...</p>
+</div>
+
+<!-- PANTALLA: resultado de la pregunta -->
+<div class="screen" id="s-resultado">
+  <div class="resultado-icono" id="res-icono">🤔</div>
+  <h2 id="res-titulo">–</h2>
+  <div class="pts-badge" id="res-pts" style="display:none">+100 pts</div>
+  <p class="resultado-desc" id="res-desc">–</p>
+  <p class="resultado-espera-txt">Esperá la siguiente pregunta...</p>
+</div>
+
+<!-- PANTALLA: fin del juego -->
+<div class="screen" id="s-fin">
+  <div class="flag">🏆</div>
+  <h1>¡Fin del juego!</h1>
+  <div class="fin-ranking-seccion">
+    <h3 class="fin-seccion-titulo">🏅 Ranking de la ronda</h3>
+    <div class="ranking-final" id="ranking-final"></div>
+  </div>
+  <div class="fin-ranking-seccion">
+    <h3 class="fin-seccion-titulo">🏆 Ranking general (acumulado)</h3>
+    <div class="ranking-final" id="ranking-general-final"></div>
+  </div>
+  <div class="mi-historial" id="mi-historial" style="display:none">
+    <h3 class="fin-seccion-titulo">📝 Mis respuestas</h3>
+    <div id="mi-historial-lista"></div>
+  </div>
+  <button class="btn btn-gold" data-action="volver-al-lobby" data-testid="btn-jugar-de-nuevo">Jugar de nuevo</button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/entrypoints/alumno.entry.js"></script>
+</body>
+</html>
+>>>>>>> origin/main

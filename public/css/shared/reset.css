@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -18,3 +19,25 @@ a {
   color: inherit;
   text-decoration: none;
 }
+=======
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+img, svg, video {
+  max-width: 100%;
+  display: block;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+>>>>>>> origin/main

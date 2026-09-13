@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 :root {
   --color-bg: #0f1115;
   --color-card: #1a1d24;
@@ -19,3 +20,26 @@
   --space-3: 16px;
   --space-4: 24px;
 }
+=======
+:root {
+  --color-bg: #0f1115;
+  --color-card: #1a1d24;
+  --color-border: #2a2d35;
+  --color-text: #e8eaed;
+  --color-muted: #9aa0a6;
+  --color-primary: #6c5ce7;
+  --color-gold: #f0a500;
+  --color-green: #00b894;
+  --color-red: #d63031;
+  --color-blue: #3498db;
+  --font-base: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "Courier New", monospace;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+}
+>>>>>>> origin/main

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -222,3 +223,189 @@
 <script type="module" src="/js/entrypoints/admin.entry.js"></script>
 </body>
 </html>
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Quiz – Administrar Preguntas</title>
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="layout">
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div style="display:flex; justify-content:space-between; align-items:center; width:100%">
+        <h1 style="margin:0; font-size:16px;">📚 Bancos de Preguntas</h1>
+        <button data-action="cerrar-sesion" class="btn btn-ghost btn-sm" style="padding:4px 8px; border-color:var(--border)">🔓 Salir</button>
+      </div>
+      <p style="margin-top:6px">Seleccioná un banco para editarlo</p>
+    </div>
+    <div class="banco-lista" id="banco-lista">
+      <div class="empty-state" style="padding:30px 16px;font-size:13px">Cargando...</div>
+    </div>
+    <button class="btn-nuevo-banco" data-action="abrir-modal-banco">👁️ Nuevo banco</button>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+    <!-- Barra superior móvil (oculta en desktop) -->
+    <div class="mobile-nav" id="mobile-nav">
+      <select id="mobile-banco-select" data-action="seleccionar-banco">
+        <option value="">– Seleccionar banco –</option>
+      </select>
+      <button class="btn btn-gold btn-sm" data-action="abrir-modal-banco">➕ Nuevo</button>
+      <button class="btn btn-ghost btn-sm" data-action="cerrar-sesion" style="border-color:var(--border)">Salir</button>
+    </div>
+
+    <div id="main-content">
+      <div class="empty-state">
+        <div class="icon">📖</div>
+        <p style="font-size:16px;font-weight:600;color:var(--text)">Seleccioná un banco</p>
+        <p style="margin-top:6px">Elegí un banco de preguntas en el panel izquierdo o creá uno nuevo.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- ── MODAL: Banco ── -->
+<div class="overlay" id="modal-banco">
+  <div class="modal">
+    <div class="modal-title" id="modal-banco-titulo">Nuevo banco de preguntas</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Nombre del banco</label>
+        <input type="text" id="b-nombre" placeholder="Ej: Revolución Industrial – 3° año">
+      </div>
+      <div class="form-group">
+        <label>Nivel educativo</label>
+        <select id="b-nivel">
+          <option value="Primario">Primario</option>
+          <option value="Secundario" selected>Secundario</option>
+          <option value="Universitario">Universitario</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Año / Grado</label>
+        <select id="b-anio">
+          <option value="1°">1°</option><option value="2°">2°</option><option value="3°" selected>3°</option>
+          <option value="4°">4°</option><option value="5°">5°</option><option value="6°">6°</option>
+          <option value="7°">7°</option><option value="General">General</option>
+        </select>
+      </div>
+      <div class="form-group full">
+        <label>Tema</label>
+        <input type="text" id="b-tema" placeholder="Ej: Independencia, Siglo XX, Revolución Francesa...">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" data-action="guardar-banco">💾 Guardar</button>
+      <button class="btn btn-ghost" data-action="cerrar-modal" data-modal="modal-banco">Cancelar</button>
+      <button class="btn btn-red" id="btn-borrar-banco" style="margin-left:auto;display:none" data-action="borrar-banco">🗑 Eliminar banco</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Pregunta ── -->
+<div class="overlay" id="modal-pregunta">
+  <div class="modal">
+    <div class="modal-title" id="modal-preg-titulo">Nueva pregunta</div>
+    <div class="form-grid">
+      <div class="form-group full">
+        <label>Pregunta</label>
+        <textarea id="p-pregunta" placeholder="Escribí la pregunta..."></textarea>
+      </div>
+      <div class="form-group full">
+        <label>Opciones de respuesta</label>
+        <div class="opciones-inputs">
+          <div class="opcion-input-wrap A"><span class="opcion-letra">A</span><input type="text" id="p-opA" placeholder="Opción A"></div>
+          <div class="opcion-input-wrap B"><span class="opcion-letra">B</span><input type="text" id="p-opB" placeholder="Opción B"></div>
+          <div class="opcion-input-wrap C"><span class="opcion-letra">C</span><input type="text" id="p-opC" placeholder="Opción C"></div>
+          <div class="opcion-input-wrap D"><span class="opcion-letra">D</span><input type="text" id="p-opD" placeholder="Opción D"></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Respuesta correcta</label>
+        <div class="correcta-radio">
+          <label><input type="radio" name="correcta" value="0"> A</label>
+          <label><input type="radio" name="correcta" value="1"> B</label>
+          <label><input type="radio" name="correcta" value="2"> C</label>
+          <label><input type="radio" name="correcta" value="3"> D</label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Época / Categoría</label>
+        <input type="text" id="p-epoca" placeholder="Ej: Independencia, Siglo XX...">
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-gold" data-action="guardar-pregunta">💾 Guardar pregunta</button>
+      <button class="btn btn-ghost" data-action="cerrar-modal" data-modal="modal-pregunta">Cancelar</button>
+      <button class="btn btn-red" id="btn-borrar-preg" style="display:none;margin-left:auto" data-action="borrar-pregunta">🗑 Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL: Importar ── -->
+<div class="overlay" id="modal-import">
+  <div class="modal">
+    <div class="modal-title">⬆️ Importar preguntas</div>
+    <div class="import-tabs">
+      <button class="import-tab activo" data-action="switch-import" data-import="csv">📄 CSV</button>
+      <button class="import-tab" data-action="switch-import" data-import="json">🔧 JSON</button>
+    </div>
+
+    <div id="import-csv">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
+        El CSV debe tener columnas separadas por <strong>punto y coma (;)</strong> en este orden:<br>
+        <code style="color:var(--gold)">pregunta ; opcionA ; opcionB ; opcionC ; opcionD ; correcta (A/B/C/D) ; epoca</code>
+      </p>
+      <div class="drop-zone" id="drop-zone" data-action="trigger-file-input">
+        <div style="font-size:28px">📂</div>
+        <p style="margin-top:8px">Arrastrá el archivo CSV aquí<br><small>o hacé clic para seleccionarlo</small></p>
+        <input type="file" id="file-csv" accept=".csv,.txt" style="display:none" data-action="leer-csv">
+      </div>
+      <div class="csv-preview" id="csv-preview" style="display:none"></div>
+      <p id="csv-info" style="font-size:13px;color:var(--green);margin-top:8px;display:none"></p>
+    </div>
+
+    <div id="import-json" style="display:none">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:10px">
+        Pegá un array JSON con el formato:<br>
+        <code style="color:var(--gold);font-size:11px">{"preguntas":[{"pregunta":"...","opciones":["A","B","C","D"],"correcta":0,"epoca":"..."}]}</code>
+      </p>
+      <textarea id="json-input" placeholder='{"preguntas":[...]}' style="height:140px;font-family:monospace;font-size:12px"></textarea>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-gold" data-action="importar">⬆️ Importar</button>
+      <button class="btn btn-ghost" data-action="cerrar-modal" data-modal="modal-import">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Autenticación -->
+<div class="overlay" id="modal-auth" style="display: none; align-items: center; justify-content: center; z-index: 1000;">
+  <div class="modal" style="max-width: 380px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 12px;">🔒</div>
+    <div class="modal-title">Acceso de Administración</div>
+    <p style="font-size: 13px; color: var(--muted); margin-bottom: 16px;">Por favor, ingresá la clave para gestionar las preguntas.</p>
+    <div class="form-group full" style="margin-bottom: 16px;">
+      <input type="password" id="auth-password" placeholder="Contraseña..." style="text-align: center; font-size: 16px; padding: 10px; width: 100%; box-sizing: border-box; background: var(--card2); border: 1px solid var(--border); color: var(--text); border-radius: 8px; outline: none;">
+    </div>
+    <div class="error-box" id="auth-error-box" style="margin-bottom: 12px; display: none; color: #ff6b6b; font-size: 13px; font-weight: 500;"></div>
+    <button class="btn btn-gold" style="width: 100%; padding: 12px;" data-action="autenticar-admin">Entrar</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/entrypoints/admin.entry.js"></script>
+</body>
+</html>
+>>>>>>> origin/main

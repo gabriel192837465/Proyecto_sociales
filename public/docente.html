@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -171,3 +172,153 @@
 </body>
 </html>
 
+=======
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Historia Quiz – Panel Docente</title>
+<script src="js/shared/qrcode.min.js"></script>
+<link rel="stylesheet" href="css/docente.css">
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo"><span>🇦🇷</span><h1>Historia Quiz</h1></div>
+    <div class="header-links">
+      <span id="estado-cx" class="estado-conexion">Conectando...</span>
+      <a href="admin.html" class="link-admin">📚 Administrar preguntas</a>
+      <span class="badge">DOCENTE</span>
+      <button data-action="cerrar-sesion" class="btn-salir">🔓 Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="panel-izq">
+
+      <!-- SELECTOR DE BANCO -->
+      <div class="card" id="card-banco">
+        <div class="card-title">📚 Seleccionar banco de preguntas</div>
+        <div class="banco-selector">
+          <select class="banco-select" id="banco-select" data-action="banco-change">
+            <option value="">– Elegí un banco –</option>
+          </select>
+          <div class="tiempo-selector-row">
+            <label class="tiempo-selector-label">Tiempo por pregunta:</label>
+            <select class="banco-select tiempo-selector-select" id="tiempo-select">
+              <option value="10">10 segundos</option>
+              <option value="15">15 segundos</option>
+              <option value="20" selected>20 segundos</option>
+              <option value="30">30 segundos</option>
+              <option value="45">45 segundos</option>
+              <option value="60">60 segundos</option>
+            </select>
+          </div>
+          <div class="banco-meta" id="banco-meta"></div>
+          <div class="error-box" id="error-box"></div>
+        </div>
+      </div>
+
+      <!-- LOBBY -->
+      <div id="pantalla-lobby" class="card">
+        <h2 class="lobby-titulo">Sala de espera</h2>
+        <p class="lobby-subtitulo">Los alumnos escanean el QR para ingresar...</p>
+        <div class="jugadores-count" id="count-jugadores">0</div>
+        <p class="lobby-contador-label">alumnos conectados</p>
+        <div class="jugadores-lista" id="lista-jugadores"></div>
+      </div>
+
+      <!-- PREGUNTA -->
+      <div id="pantalla-pregunta" class="card">
+        <div class="timer-row">
+          <div class="timer-bar-track timer-bar-track-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+          <div class="timer-num" id="timer-num">20s</div>
+        </div>
+        <div class="meta-row">
+          <span class="epoca-tag" id="epoca-tag">–</span>
+          <span class="pregunta-numero-badge" id="pregunta-num">1/10</span>
+        </div>
+        <div class="pregunta-txt" id="pregunta-txt">–</div>
+        <div class="opciones-grid" id="opciones-container"></div>
+        <div class="progreso-resp" id="resp-estado-alumnos"></div>
+      </div>
+
+      <!-- RESULTADO -->
+      <div id="pantalla-resultado" class="card">
+        <h2 class="resultado-titulo">Resultado de la pregunta</h2>
+        <div id="resultado-contenido"></div>
+      </div>
+
+      <!-- FIN -->
+      <div id="pantalla-fin" class="card">
+        <div class="fin-header">
+          <div class="fin-icono">🏆</div>
+          <h2 class="fin-titulo">¡Juego terminado!</h2>
+          <p class="fin-subtitulo">Resumen por alumno</p>
+        </div>
+        <div class="fin-acciones">
+          <button class="btn btn-outline" data-action="exportar-csv">⬇ Exportar CSV</button>
+          <button class="btn btn-outline" data-action="imprimir-informe">🖨 Imprimir informe</button>
+        </div>
+        <div id="podio-fin"></div>
+        <div class="fin-volver-btn-wrap">
+          <button class="btn btn-gold" data-action="volver-al-menu" data-testid="btn-volver-menu">🏠 Volver al menú principal</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Panel der -->
+    <div class="panel-der">
+      <div>
+        <div class="ranking-titulo">📱 Código QR para alumnos</div>
+        <div class="qr-wrap">
+          <div id="qrcode"></div>
+          <div class="qr-url" id="qr-url-txt">Cargando...</div>
+        </div>
+      </div>
+      <hr>
+      <div>
+        <button class="btn btn-gold" data-action="iniciar-juego" data-testid="btn-iniciar">🎮 Iniciar / Reiniciar</button>
+        <button class="btn btn-gold" id="btn-siguiente" data-action="siguiente-pregunta" disabled>▶ Siguiente pregunta</button>
+        <button class="btn btn-outline" id="btn-pausa" data-action="alternar-pausa" disabled>⏸ Pausar tiempo</button>
+        <button class="btn btn-outline" id="btn-forzar" data-action="forzar-resultado" disabled>⏭ Terminar tiempo</button>
+      </div>
+      <hr>
+      <div>
+        <div class="ranking-titulo">🏅 Ranking de la ronda</div>
+        <div id="ranking-lista"><p class="vacio-ranking-txt">Sin jugadores aún</p></div>
+      </div>
+      <hr>
+      <div>
+        <div class="ranking-titulo">🏆 Ranking general (acumulado)</div>
+        <div id="ranking-general-lista"><p class="vacio-ranking-txt">Sin jugadores aún</p></div>
+        <button class="btn btn-outline btn-reiniciar-ranking" data-action="reiniciar-ranking-general">🔄 Reiniciar ranking general</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL: Autenticación -->
+<div class="overlay" id="modal-auth" style="display: none;">
+  <div class="modal">
+    <div class="modal-lock-icon">🔒</div>
+    <div class="modal-title">Acceso Docente</div>
+    <p class="modal-sub">Por favor, ingresá la clave docente para iniciar el juego.</p>
+    <div class="modal-input-wrap">
+      <input type="password" id="auth-password" class="modal-password-input" placeholder="Contraseña...">
+    </div>
+    <div class="error-box modal-error" id="auth-error-box"></div>
+    <button class="btn btn-gold modal-btn" data-action="autenticar-docente">Entrar</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script type="module" src="/js/entrypoints/docente.entry.js"></script>
+</body>
+</html>
+
+>>>>>>> origin/main

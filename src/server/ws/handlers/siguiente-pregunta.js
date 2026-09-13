@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const { requireDocenteWs } = require("./helpers");
 const { siguiente, mostrarResultadoManual } = require("../../application/use-cases/avanzar-pregunta");
 
@@ -12,3 +13,19 @@ function handleMostrarResultadoManual(ws, _msg, state) {
 }
 
 module.exports = { handleSiguientePregunta, handleMostrarResultadoManual };
+=======
+const { requireDocenteWs } = require("./helpers");
+const { siguiente, mostrarResultadoManual } = require("../../application/use-cases/avanzar-pregunta");
+
+function handleSiguientePregunta(ws, _msg, state) {
+  if (!requireDocenteWs(ws, state)) return;
+  siguiente(state);
+}
+
+function handleMostrarResultadoManual(ws, _msg, state) {
+  if (!requireDocenteWs(ws, state)) return;
+  mostrarResultadoManual(state);
+}
+
+module.exports = { handleSiguientePregunta, handleMostrarResultadoManual };
+>>>>>>> origin/main

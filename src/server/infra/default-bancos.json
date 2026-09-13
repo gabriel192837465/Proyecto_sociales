@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "bancos": [
     {
@@ -30,3 +31,37 @@
     }
   ]
 }
+=======
+{
+  "bancos": [
+    {
+      "id": "banco_1",
+      "nombre": "Independencia Argentina",
+      "nivel": "Secundario",
+      "anio": "2°",
+      "tema": "Independencia",
+      "preguntas": [
+        { "id": "p1", "pregunta": "¿En qué año se produjo la Revolución de Mayo?", "opciones": ["1810","1816","1806","1820"], "correcta": 0, "epoca": "Independencia" },
+        { "id": "p2", "pregunta": "¿Quién lideró el cruce de los Andes?", "opciones": ["Manuel Belgrano","Martín de Güemes","José de San Martín","Bernardino Rivadavia"], "correcta": 2, "epoca": "Independencia" },
+        { "id": "p3", "pregunta": "¿En qué año se declaró la Independencia?", "opciones": ["1810","1816","1820","1813"], "correcta": 1, "epoca": "Independencia" },
+        { "id": "p4", "pregunta": "¿Quién creó la bandera argentina?", "opciones": ["José de San Martín","Manuel Belgrano","Mariano Moreno","Juan José Castelli"], "correcta": 1, "epoca": "Independencia" },
+        { "id": "p5", "pregunta": "¿En qué ciudad se declaró la Independencia?", "opciones": ["Buenos Aires","Córdoba","Tucumán","Salta"], "correcta": 2, "epoca": "Independencia" }
+      ]
+    },
+    {
+      "id": "banco_2",
+      "nombre": "Argentina Siglo XX",
+      "nivel": "Secundario",
+      "anio": "4°",
+      "tema": "Siglo XX",
+      "preguntas": [
+        { "id": "p6", "pregunta": "¿En qué año llegó Perón por primera vez al poder?", "opciones": ["1943","1946","1952","1955"], "correcta": 1, "epoca": "Siglo XX" },
+        { "id": "p7", "pregunta": "¿En qué año fue la Guerra de Malvinas?", "opciones": ["1978","1980","1982","1984"], "correcta": 2, "epoca": "Siglo XX" },
+        { "id": "p8", "pregunta": "¿Cuándo recuperó Argentina la democracia?", "opciones": ["1980","1983","1985","1989"], "correcta": 1, "epoca": "Democracia" },
+        { "id": "p9", "pregunta": "¿Qué ley estableció el sufragio universal masculino?", "opciones": ["Ley Sáenz Peña","Ley Avellaneda","Ley Roca-Runciman","Ley de Residencia"], "correcta": 0, "epoca": "Siglo XX" },
+        { "id": "p10", "pregunta": "¿Quién asumió la presidencia en 1983?", "opciones": ["Carlos Menem","Eduardo Duhalde","Raúl Alfonsín","Fernando de la Rúa"], "correcta": 2, "epoca": "Democracia" }
+      ]
+    }
+  ]
+}
+>>>>>>> origin/main
