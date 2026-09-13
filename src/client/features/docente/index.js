@@ -85,7 +85,10 @@ const autenticarDocente = () => {
   if (!pw) { mostrarAuthError("La contraseña no puede estar vacía."); return; }
   setToken(pw);
   const modal = document.getElementById("modal-auth");
-  if (modal) modal.style.display = "none";
+  if (modal) {
+    modal.classList.remove("visible");
+    modal.style.display = "none";
+  }
   const errBox = document.getElementById("auth-error-box");
   if (errBox) errBox.style.display = "none";
   cargarBancos();
@@ -231,6 +234,11 @@ if (typeof document !== "undefined" && document.getElementById("estado-cx")) {
   if (!S.token) {
     pedirClave();
   } else {
+    const modal = document.getElementById("modal-auth");
+    if (modal) {
+      modal.classList.remove("visible");
+      modal.style.display = "none";
+    }
     cargarBancos();
     conectar();
   }

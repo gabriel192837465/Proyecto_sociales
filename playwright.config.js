@@ -15,12 +15,14 @@ module.exports = defineConfig({
     headless: true,
   },
   webServer: {
-    command: 'node src/server/index.js',
+    command: 'node tests/e2e/start-server.js',
     port: 3002,
     reuseExistingServer: false,
     env: {
       PORT: '3002',
-      HISTORIA_ADMIN_TOKEN: 'historia',
+      HISTORIA_ADMIN_TOKEN: process.env.HISTORIA_ADMIN_TOKEN || 'historia',
+      HISTORIA_COOKIE_SECRET: process.env.HISTORIA_COOKIE_SECRET || 'playwright-cookie-secret',
+      HISTORIA_DB_PATH: './data/e2e-test.db',
       HEARTBEAT_INTERVAL_MS: '3000',
     },
   },

@@ -6,4 +6,5 @@ module.exports = async () => {
   if (fs.existsSync(p)) {
     fs.unlinkSync(p);
   }
+
 };

@@ -35,7 +35,7 @@ async function loginDocente(browser, options = {}) {
 
   // Wait for WebSocket connection and initial state
   await page.waitForFunction(
-    () => typeof S !== 'undefined' && S.ws !== null && S.fase !== undefined,
+    () => typeof S !== 'undefined' && S.ws !== null && Boolean(S.fase),
     { timeout: 10000 }
   );
 
@@ -142,6 +142,10 @@ async function registrarCuentaAlumno(page, nombre) {
   const email = `${emailLocal}_${Math.random().toString(36).slice(2, 8)}@alu.tecnica29de6.edu.ar`;
 
   await page.goto("/alumno.html");
+  const accountPanel = page.locator("#account-panel");
+  if (!(await accountPanel.evaluate((el) => el.classList.contains("visible")))) {
+    await page.locator('[data-action="mostrar-cuenta"]').click();
+  }
   await page.locator('[data-action="mostrar-tab-registro"]').click();
   await page.locator("#registro-email").fill(email);
   await page.locator("#registro-nombre-usuario").fill(nombre);

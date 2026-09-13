@@ -95,6 +95,7 @@ test.describe('Historia Quiz — Casos de borde E2E adicionales', () => {
       // entrar a la partida.
       page2 = await browser.newPage();
       await page2.goto('/alumno.html');
+      await page2.locator('[data-action="mostrar-cuenta"]').click();
       await page2.locator('[data-action="mostrar-tab-registro"]').click();
       await page2.locator('#registro-email').fill(`otro_${suf}@alu.tecnica29de6.edu.ar`);
       await page2.locator('#registro-nombre-usuario').fill(nombreBase.toUpperCase());
@@ -126,6 +127,7 @@ test.describe('Historia Quiz — Casos de borde E2E adicionales', () => {
       pageMovil = await contextMovil.newPage();
 
       await pageMovil.goto('/alumno.html');
+      await pageMovil.locator('[data-action="mostrar-cuenta"]').click();
       await pageMovil.locator('[data-action="mostrar-tab-registro"]').click();
       await pageMovil.locator('#registro-email').fill(`mobile_${suf}@alu.tecnica29de6.edu.ar`);
       await pageMovil.locator('#registro-nombre-usuario').fill(`Mobile_${suf}`);

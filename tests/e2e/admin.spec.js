@@ -77,7 +77,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await expect(page.locator('#modal-pregunta')).not.toBeVisible({ timeout: 3000 });
 
     // Verificar que la pregunta se agregó
-    await expect(page.locator('.tabla-preguntas tbody')).toContainText('Pregunta de prueba', { timeout: 5000 });
+    await expect(page.locator('.tabla-preguntas tr:has-text("Pregunta de prueba")')).toBeVisible({ timeout: 5000 });
   });
 
   test('editar un banco existente', async ({ page }) => {
@@ -180,7 +180,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
 
     // Verificar que la pregunta aparezca
     await expect(page.locator('.tabla-preguntas tbody tr:has(td)')).toHaveCount(countBefore + 1, { timeout: 5000 });
-    await expect(page.locator('.tabla-preguntas tbody')).toContainText('Revolución de Mayo', { timeout: 5000 });
+    await expect(page.locator('.tabla-preguntas tbody tr:has-text("Revolución de Mayo")')).toBeVisible({ timeout: 5000 });
   });
 
   test('editar una pregunta existente', async ({ page }) => {
@@ -209,7 +209,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await expect(page.locator('#modal-pregunta')).not.toBeVisible({ timeout: 3000 });
 
     // Verificar que la pregunta se actualizó
-    await expect(page.locator('.tabla-preguntas tbody')).toContainText(nuevaPregunta, { timeout: 5000 });
+    await expect(page.locator(`.tabla-preguntas tr:has-text("${nuevaPregunta}")`)).toBeVisible({ timeout: 5000 });
   });
 
   test('eliminar una pregunta', async ({ page }) => {
@@ -500,9 +500,9 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await expect(page.locator('#main-content')).not.toContainText('Seleccioná un banco', { timeout: 5000 });
 
     // Verificar que la pregunta válida está presente y las inválidas no
-    await expect(page.locator('.tabla-preguntas tbody')).toContainText('¿Valida?', { timeout: 5000 });
-    await expect(page.locator('.tabla-preguntas tbody')).not.toContainText('línea con pocas columnas');
-    await expect(page.locator('.tabla-preguntas tbody')).not.toContainText('¿Letra mala?');
+    await expect(page.locator('.tabla-preguntas tr:has-text("¿Valida?")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.tabla-preguntas tr:has-text("línea con pocas columnas")')).toHaveCount(0);
+    await expect(page.locator('.tabla-preguntas tr:has-text("¿Letra mala?")')).toHaveCount(0);
 
     // 3) Probar también a través del modal de import (UI completa)
     await page.click('button:has-text("Importar")');
@@ -518,7 +518,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await page.click('#modal-import button:has-text("Importar")');
     await expect(page.locator('#modal-import')).not.toBeVisible({ timeout: 3000 });
     await expect(page.locator('#toast')).toContainText(/importadas?/, { timeout: 5000 });
-    await expect(page.locator('.tabla-preguntas tbody')).toContainText('¿Vía modal?');
+    await expect(page.locator('.tabla-preguntas tr:has-text("¿Vía modal?")')).toBeVisible();
 
     // Cleanup
     await page.click(`#banco-lista .banco-item:has-text("${nombreBanco}")`);

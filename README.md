@@ -45,6 +45,10 @@ También podés definir `PORT` (por defecto `3000`), `HISTORIA_DB_PATH`, `TRUST_
 
 ## 🎮 Uso
 
+### Guía rápida para el aula
+
+La guía completa para trabajar sin Internet, usando datos móviles mediante un hotspot o una red Wi-Fi local aislada, está en [docs/GUIA_AULA.md](docs/GUIA_AULA.md). Incluye preparación, firewall de Windows, QR, reconexión y solución de problemas.
+
 ### Iniciar el servidor
 
 ```bash
