@@ -8,6 +8,7 @@
 const { expect } = require('@playwright/test');
 
 const ADMIN_TOKEN = process.env.HISTORIA_ADMIN_TOKEN || 'historia';
+let codigoSalaE2E = null;
 
 /**
  * Returns a random 4-character suffix for unique test names.
@@ -50,12 +51,16 @@ async function loginDocente(browser, options = {}) {
 
   await expect(page.locator('#pantalla-lobby')).toBeVisible({ timeout: 10000 });
 
+  await page.locator('[data-testid="btn-crear-partida"]').click();
+  await expect(page.locator('#codigo-partida-txt')).toContainText(/\d{6}/, { timeout: 5000 });
+  codigoSalaE2E = (await page.locator('#codigo-partida-txt').textContent()).match(/\d{6}/)[0];
+
   let banco = null;
   if (seleccionarBanco) {
     await selectBancoConPreguntas(page);
   }
 
-  return { page, cerrar, banco };
+  return { page, cerrar, banco, codigo: codigoSalaE2E };
 }
 
 /**
@@ -167,7 +172,7 @@ async function loginCuentaAlumno(page, { email, password }) {
   await page.goto("/alumno.html");
   await page.locator("#login-email").fill(email);
   await page.locator("#login-password").fill(password);
-  await page.locator("#btn-login").click();
+  await page.locator("#btn-login").click({ force: true });
   await expect(page.locator("#s-unirse")).toBeVisible({ timeout: 5000 });
 }
 
@@ -182,7 +187,7 @@ async function loginCuentaAlumno(page, { email, password }) {
  * @param {import('@playwright/test').Page} page
  * @param {string} [codigo]
  */
-async function ingresarConCodigo(page, codigo = "000000") {
+async function ingresarConCodigo(page, codigo = codigoSalaE2E || "000000") {
   await page.locator("#input-codigo").fill(codigo);
   await page.locator("#btn-entrar").click();
 }

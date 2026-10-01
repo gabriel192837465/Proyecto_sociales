@@ -1,4 +1,4 @@
-import { state, setWS, setMiNombre, setMiRespuesta, setMiPuntaje, setPendienteEnvio, setSessionToken, setCodigoPartida, setCuenta } from "./state.js";
+import { state, setWS, setMiNombre, setMiRespuesta, setMiPuntaje, setPendienteEnvio, setSessionToken, setCodigoPartida, setAutoReconectando, setCuenta } from "./state.js";
 import { conectar, manejarMensaje, enviar } from "./socket.js";
 import { setPantalla } from "./views.js";
 import { setAutoReconnectEnabled } from "../../shared/socket-client.js";
@@ -95,6 +95,14 @@ const cerrarSesion = async () => {
   try { await fetch("/api/alumno/logout", { method: "POST" }); } catch (e) {}
   setCuenta(null);
   setMiNombre("");
+  setCodigoPartida("");
+  setSessionToken("");
+  setAutoReconectando(false);
+  try {
+    localStorage.removeItem("historia_quiz_codigo");
+    localStorage.removeItem("historia_quiz_token");
+    sessionStorage.removeItem("historia_quiz_token");
+  } catch (e) {}
   setAutoReconnectEnabled(false);
   if (state.ws) { state.ws.close(); setWS(null); }
   setPantalla("s-cuenta");
@@ -192,6 +200,7 @@ const usarCodigoInicio = () => usarCodigo("home-input-codigo", "home-code-error"
 
 // ── Local Actions ─────────────────────────────────────────────────────────
 const entrar = async () => {
+  setAutoReconectando(false);
   const inputCodigo = document.getElementById("input-codigo");
   const codigo = (inputCodigo ? inputCodigo.value : "").trim();
   if (!/^\d{6}$/.test(codigo)) {
@@ -461,6 +470,7 @@ export { restaurarOpciones } from "./views.js";
 
   const codigoDesdeUrl = new URLSearchParams(window.location.search).get("codigo") || "";
   const savedCodigo = (codigoDesdeUrl.match(/^\d{6}$/) ? codigoDesdeUrl : localStorage.getItem("historia_quiz_codigo") || "").trim();
+  const savedToken = sessionStorage.getItem("historia_quiz_token") || localStorage.getItem("historia_quiz_token");
   const savedName = usuario ? usuario.nombreUsuario : localStorage.getItem("historia_quiz_nombre");
 
   if (/^\d{6}$/.test(codigoDesdeUrl)) {
@@ -473,7 +483,7 @@ export { restaurarOpciones } from "./views.js";
     setCuenta(usuario);
     irAPantallaCodigo(usuario);
     const inputCodigo = document.getElementById("input-codigo");
-    if (inputCodigo && savedCodigo) inputCodigo.value = savedCodigo;
+    if (inputCodigo && savedCodigo && savedToken) inputCodigo.value = savedCodigo;
   }
 
   if (codigoDesdeUrl && !/^\d{6}$/.test(codigoDesdeUrl)) {
@@ -481,15 +491,13 @@ export { restaurarOpciones } from "./views.js";
     if (error) error.textContent = "El código del QR no es válido.";
   }
 
-  if (!savedName || !savedCodigo) return;
+  if (!savedName || !savedCodigo || !savedToken) return;
 
-  const savedToken = sessionStorage.getItem("historia_quiz_token") || localStorage.getItem("historia_quiz_token");
-  if (savedToken) {
-    setSessionToken(savedToken);
-  }
+  setSessionToken(savedToken);
 
   setMiNombre(savedName);
   setCodigoPartida(savedCodigo);
+  setAutoReconectando(true);
   entrar_reconexion();
 })();
 
@@ -504,8 +512,12 @@ async function entrar_reconexion() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ nombre: state.miNombre })
     });
-    if (!res.ok) return;
+    if (!res.ok) {
+      setAutoReconectando(false);
+      return;
+    }
   } catch (e) {
+    setAutoReconectando(false);
     return;
   }
   conectar();

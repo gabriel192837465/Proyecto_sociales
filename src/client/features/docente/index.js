@@ -23,7 +23,7 @@ function conectar() {
   wsConectar({
     onOpen(ws) {
       S.ws = ws;
-      ws.send(JSON.stringify({ tipo: "docente_conecta", token: S.token }));
+      ws.send(JSON.stringify({ tipo: "docente_conecta", token: S.token, codigoPartida: S.codigoPartida }));
       const stateEl = document.getElementById("estado-cx");
       if (stateEl) stateEl.innerHTML = '<span class="dot-ok"></span>Conectado';
       if (_hasConnectedBefore) {

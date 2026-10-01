@@ -46,7 +46,7 @@ function ejecutar(state, msg) {
     sendDocente(state, { tipo: "error", msg: "No hay alumnos conectados. Esperá a que se conecten antes de iniciar." });
     return false;
   }
-  borrarSnapshot();
+  borrarSnapshot(state.estado);
   const banco = state.db.bancos.find((b) => b.id === bancoId);
   if (!banco || banco.preguntas.length === 0) {
     sendDocente(state, { tipo: "error", msg: "El banco seleccionado está vacío." });

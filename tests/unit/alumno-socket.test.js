@@ -2,10 +2,11 @@
  * @jest-environment jsdom
  */
 const socketModule = require('../../src/client/features/alumno/socket');
-const { state, setMiNombre, setJugadoresSala, setMiRespuesta, setMiPuntaje, setTiempoMax, setReconectarAuto, setWS, setPendienteEnvio, setMiId } = require('../../src/client/features/alumno/state');
+const { state, setMiNombre, setJugadoresSala, setMiRespuesta, setMiPuntaje, setTiempoMax, setReconectarAuto, setWS, setPendienteEnvio, setMiId, setSessionToken, setCodigoPartida, setAutoReconectando } = require('../../src/client/features/alumno/state');
 
 function baseHTML() {
   return `
+    <div class="screen" id="s-cuenta"></div>
     <div class="screen" id="s-unirse"></div>
     <div class="screen" id="s-espera"></div>
     <div class="screen" id="s-pregunta"></div>
@@ -13,6 +14,7 @@ function baseHTML() {
     <div class="screen" id="s-resultado"></div>
     <div class="screen" id="s-fin"></div>
     <div id="input-nombre"></div>
+    <input id="input-codigo" value="">
     <div id="error-nombre" style="display:none"></div>
     <div id="btn-entrar"></div>
     <div id="nombre-display"></div>
@@ -51,6 +53,9 @@ describe('alumno/socket', () => {
     setReconectarAuto(true);
     setWS(null);
     setMiId(null);
+    setSessionToken('');
+    setCodigoPartida('');
+    setAutoReconectando(false);
     global.WebSocket = class MockWS {
       constructor(url) { this.url = url; this.readyState = 1; }
       send(data) { this.lastSent = data; }
@@ -416,6 +421,35 @@ describe('alumno/socket', () => {
     });
   });
 
+  describe('manejarMensaje — codigo_invalido', () => {
+    test('una restauración automática vencida vuelve al ingreso sin error y limpia el código', () => {
+      setAutoReconectando(true);
+      setCodigoPartida('123456');
+      setSessionToken('token-viejo');
+      document.getElementById('input-codigo').value = '123456';
+      localStorage.setItem('historia_quiz_codigo', '123456');
+      localStorage.setItem('historia_quiz_token', 'token-viejo');
+      sessionStorage.setItem('historia_quiz_token', 'token-viejo');
+
+      socketModule.manejarMensaje({ tipo: 'codigo_invalido', mensaje: 'Código de partida inválido o finalizado.' });
+
+      expect(document.getElementById('s-unirse').classList.contains('activa')).toBe(true);
+      expect(document.getElementById('error-nombre').style.display).toBe('none');
+      expect(document.getElementById('input-codigo').value).toBe('');
+      expect(state.codigoPartida).toBe('');
+      expect(state.sessionToken).toBe('');
+      expect(localStorage.getItem('historia_quiz_codigo')).toBeNull();
+      expect(localStorage.getItem('historia_quiz_token')).toBeNull();
+      expect(sessionStorage.getItem('historia_quiz_token')).toBeNull();
+    });
+
+    test('un código escrito por el alumno sí muestra el error del servidor', () => {
+      socketModule.manejarMensaje({ tipo: 'codigo_invalido', mensaje: 'Código inválido.' });
+      expect(document.getElementById('error-nombre').textContent).toBe('Código inválido.');
+      expect(document.getElementById('error-nombre').style.display).toBe('block');
+    });
+  });
+
   describe('manejarMensaje — respuesta_rechazada', () => {
     let warnSpy;
     beforeEach(() => {
@@ -507,6 +541,29 @@ describe('alumno/socket', () => {
         socketModule.manejarMensaje({ tipo: 'respuesta_rechazada', razon: 'inventada' })
       ).not.toThrow();
       expect(warnSpy).toHaveBeenCalled();
+    });
+  });
+
+  describe('manejarMensaje — partida_eliminada', () => {
+    test('vuelve al inicio, limpia el código y avisa al alumno', () => {
+      const socket = { close: jest.fn() };
+      setWS(socket);
+      setSessionToken('token-de-juego');
+      setCodigoPartida('123456');
+      localStorage.setItem('historia_quiz_codigo', '123456');
+      localStorage.setItem('historia_quiz_token', 'token-de-juego');
+      sessionStorage.setItem('historia_quiz_token', 'token-de-juego');
+
+      socketModule.manejarMensaje({ tipo: 'partida_eliminada', mensaje: 'La partida se cerró.' });
+
+      expect(socket.close).toHaveBeenCalled();
+      expect(state.sessionToken).toBe('');
+      expect(state.codigoPartida).toBe('');
+      expect(localStorage.getItem('historia_quiz_codigo')).toBeNull();
+      expect(localStorage.getItem('historia_quiz_token')).toBeNull();
+      expect(sessionStorage.getItem('historia_quiz_token')).toBeNull();
+      expect(document.getElementById('s-cuenta').classList.contains('activa')).toBe(true);
+      expect(document.getElementById('toast').textContent).toContain('La partida se cerró.');
     });
   });
 

@@ -140,6 +140,37 @@ describe("Código de partida de 6 dígitos", () => {
     await closeWS(docente.ws);
   });
 
+  it("mantiene aulas aisladas y avisa sólo a los alumnos de la partida reemplazada", async () => {
+    const docenteA = await connectDocente(wsUrl, ADMIN_TOKEN);
+    docenteA.ws.send(JSON.stringify({ tipo: "crear_partida" }));
+    const partidaA = await waitFor(docenteA.messages, (m) => m.tipo === "partida_creada");
+    const alumnoA = await openWS(wsUrl);
+    const mensajesA = createCollector(alumnoA);
+    alumnoA.send(JSON.stringify({ tipo: "alumno_entra", nombre: "Aula A", codigo: partidaA.codigo }));
+    await waitFor(mensajesA, (m) => m.tipo === "bienvenido");
+
+    const docenteB = await connectDocente(wsUrl, ADMIN_TOKEN);
+    docenteB.ws.send(JSON.stringify({ tipo: "crear_partida" }));
+    const partidaB = await waitFor(docenteB.messages, (m) => m.tipo === "partida_creada");
+    const alumnoB = await openWS(wsUrl);
+    const mensajesB = createCollector(alumnoB);
+    alumnoB.send(JSON.stringify({ tipo: "alumno_entra", nombre: "Aula B", codigo: partidaB.codigo }));
+    await waitFor(mensajesB, (m) => m.tipo === "bienvenido");
+
+    docenteA.ws.send(JSON.stringify({ tipo: "crear_partida" }));
+    const cierre = await waitFor(mensajesA, (m) => m.tipo === "partida_eliminada");
+    expect(cierre.mensaje).toMatch(/nueva partida/i);
+    expect(mensajesB.some((m) => m.tipo === "partida_eliminada")).toBe(false);
+
+    docenteB.ws.send(JSON.stringify({ tipo: "iniciar_juego", bancoId: "banco_1" }));
+    await waitFor(mensajesB, (m) => m.tipo === "nueva_pregunta");
+
+    await closeWS(alumnoA);
+    await closeWS(alumnoB);
+    await closeWS(docenteA.ws);
+    await closeWS(docenteB.ws);
+  });
+
   describe("selección automática de banco por curso (sección 13)", () => {
     it("crear_partida con curso mapeado resuelve el banco automáticamente", async () => {
       const bancoId = "banco_1";

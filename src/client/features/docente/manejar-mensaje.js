@@ -171,6 +171,8 @@ const DISPATCH_TABLE = {
     S.serverIP = msg.serverIP;
     S.serverPort = msg.port;
     S.codigoPartida = msg.codigoPartida || null;
+    if (S.codigoPartida) sessionStorage.setItem("historia_quiz_docente_codigo", S.codigoPartida);
+    else sessionStorage.removeItem("historia_quiz_docente_codigo");
     generarQR(msg.serverIP, msg.port, S.codigoPartida);
     const codigoTxt = document.getElementById("codigo-partida-txt");
     if (codigoTxt) codigoTxt.textContent = S.codigoPartida ? `Código actual: ${S.codigoPartida}` : "";
@@ -193,6 +195,7 @@ const DISPATCH_TABLE = {
   // curso) el banco que quedó resuelto automáticamente para "Comenzar".
   partida_creada(msg) {
     S.codigoPartida = msg.codigo;
+    sessionStorage.setItem("historia_quiz_docente_codigo", msg.codigo);
     generarQR(S.serverIP, S.serverPort, msg.codigo);
     const codigoTxt = document.getElementById("codigo-partida-txt");
     if (codigoTxt) codigoTxt.textContent = `Código actual: ${msg.codigo}`;
@@ -209,6 +212,12 @@ const DISPATCH_TABLE = {
         avisoBox.style.display = "none";
       }
     }
+  },
+  partida_recuperada(msg) {
+    const reanudar = typeof window.confirm === "function" && window.confirm(
+      `Se recuperó la partida ${msg.fase || ""}. ¿Querés reanudarla?`
+    );
+    enviar("recuperar_partida", { accion: reanudar ? "reanudar" : "descartar" });
   },
   jugador_unido: reducirJugadorUnido,
   jugador_reconectado: reducirJugadorReconectado,

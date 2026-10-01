@@ -602,8 +602,9 @@ describe("WebSocket — flujo del juego", () => {
         alumnos.map(a => waitFor(a.messages, (m) => m.tipo === "nueva_pregunta"))
       );
 
+      const opcionCorrecta = server.app.state.estado.preguntasActivas[0].correcta;
       alumnos.forEach((a) => {
-        a.ws.send(JSON.stringify({ tipo: "respuesta", opcion: 0 }));
+        a.ws.send(JSON.stringify({ tipo: "respuesta", opcion: opcionCorrecta }));
       });
 
       await Promise.all(

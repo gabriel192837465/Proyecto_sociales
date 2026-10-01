@@ -208,4 +208,23 @@ describe("infra/db — sesiones (cargarEstado, guardarEstado, clearSesion)", () 
       expect(loaded.fase).toBe(stateB.fase);
     });
   });
+
+  describe("sesiones de varias aulas", () => {
+    it("persiste cada código de forma aislada y permite borrar sólo su aula", () => {
+      const aulaA = createCompleteState({ codigoPartida: "123456", tokens: { uuid1: "token-a" } });
+      const aulaB = createCompleteState({ codigoPartida: "654321", fase: "lobby" });
+
+      db.guardarEstadoAula(aulaA);
+      db.guardarEstadoAula(aulaB);
+      expect(db.cargarSesionesAulas()).toEqual(expect.arrayContaining([
+        expect.objectContaining({ codigoPartida: "123456", tokens: { uuid1: "token-a" } }),
+        expect.objectContaining({ codigoPartida: "654321", fase: "lobby" }),
+      ]));
+
+      db.clearSesionAula("123456");
+      expect(db.cargarSesionesAulas()).toEqual([
+        expect.objectContaining({ codigoPartida: "654321" }),
+      ]);
+    });
+  });
 });

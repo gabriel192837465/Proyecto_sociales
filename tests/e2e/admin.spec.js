@@ -166,7 +166,8 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await expect(page.locator('#modal-pregunta')).toBeVisible();
 
     // Llenar formulario
-    await page.fill('#p-pregunta', '¿Cuál fue la fecha de la Revolución de Mayo?');
+    const preguntaE2E = `Pregunta E2E Revolución de Mayo ${Date.now()}`;
+    await page.fill('#p-pregunta', preguntaE2E);
     await page.fill('#p-opA', '25 de Mayo de 1810');
     await page.fill('#p-opB', '9 de Julio de 1816');
     await page.fill('#p-opC', '20 de Septiembre de 1810');
@@ -180,7 +181,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
 
     // Verificar que la pregunta aparezca
     await expect(page.locator('.tabla-preguntas tbody tr:has(td)')).toHaveCount(countBefore + 1, { timeout: 5000 });
-    await expect(page.locator('.tabla-preguntas tbody tr:has-text("Revolución de Mayo")')).toBeVisible({ timeout: 5000 });
+    await expect(page.locator('.tabla-preguntas tbody tr').filter({ hasText: preguntaE2E })).toHaveCount(1, { timeout: 5000 });
   });
 
   test('editar una pregunta existente', async ({ page }) => {
@@ -197,7 +198,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
     await expect(page.locator('.tabla-preguntas tbody tr').first()).toBeVisible({ timeout: 5000 });
 
     // Hacer clic en el botón de editar de la primera pregunta
-    await page.click('.tabla-preguntas tbody tr:first-child button:has-text("✏️")');
+    await page.locator('.tabla-preguntas tbody tr:has(button:has-text("✏️"))').first().locator('button:has-text("✏️")').click();
     await expect(page.locator('#modal-pregunta')).toBeVisible();
 
     // Modificar la pregunta
@@ -230,7 +231,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
 
     // Hacer clic en el botón de eliminar de la primera pregunta
     page.on('dialog', dialog => dialog.accept());
-    await page.click('.tabla-preguntas tbody tr:first-child button:has-text("🗑")');
+    await page.locator('.tabla-preguntas tbody tr:has(button:has-text("🗑"))').first().locator('button:has-text("🗑")').click();
 
     // Verificar que la pregunta se eliminó
     await expect(page.locator('.tabla-preguntas tbody tr')).toHaveCount(countBefore - 1, { timeout: 5000 });
@@ -384,6 +385,9 @@ test.describe('Administración - Bancos de Preguntas', () => {
         await docente.waitForFunction(() => S.pantallaActual === 'lobby', { timeout: 5000 }).catch(() => {});
       }
       await expect(docente.locator('#pantalla-lobby')).toBeVisible({ timeout: 10000 });
+      await docente.locator('[data-testid="btn-crear-partida"]').click();
+      await expect(docente.locator('#codigo-partida-txt')).toContainText(/\d{6}/, { timeout: 5000 });
+      const codigo = (await docente.locator('#codigo-partida-txt').textContent()).match(/\d{6}/)[0];
 
       // Seleccionar el banco recién creado por su nombre en el dropdown
       await expect(async () => {
@@ -396,7 +400,7 @@ test.describe('Administración - Bancos de Preguntas', () => {
 
       alumno = await browser.newPage();
       await registrarCuentaAlumno(alumno, `XSS_${suf}`);
-      await ingresarConCodigo(alumno);
+      await ingresarConCodigo(alumno, codigo);
       await expect(alumno.locator('#s-espera')).toBeVisible({ timeout: 5000 });
       await expect(docente.locator('#count-jugadores')).toHaveText(/[1-9]/, { timeout: 5000 });
 

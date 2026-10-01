@@ -1,6 +1,14 @@
 const path = require("node:path");
 const fs = require("node:fs");
-const { cargarDB, cargarEstado: dbCargarEstado, guardarEstado: dbGuardarEstado, clearSesion } = require("../infra/db");
+const {
+  cargarDB,
+  cargarEstado: dbCargarEstado,
+  guardarEstado: dbGuardarEstado,
+  clearSesion,
+  cargarSesionesAulas: dbCargarSesionesAulas,
+  guardarEstadoAula: dbGuardarEstadoAula,
+  clearSesionAula: dbClearSesionAula,
+} = require("../infra/db");
 const { crearEstadoInicial } = require("../domain/game");
 const logger = require("../infra/logger");
 
@@ -8,7 +16,8 @@ const logger = require("../infra/logger");
  * Persiste el estado de sesión en SQLite.
  */
 function guardarEstado(estado) {
-  dbGuardarEstado(estado);
+  if (estado.codigoPartida) dbGuardarEstadoAula(estado);
+  else dbGuardarEstado(estado);
 }
 
 /**
@@ -25,7 +34,8 @@ const cargarSnapshot = cargarEstado;
 /**
  * Borra la sesión persistida (antes borraba el JSON, ahora limpia SQLite).
  */
-function borrarSnapshot() {
+function borrarSnapshot(estado) {
+  if (estado && estado.codigoPartida) dbClearSesionAula(estado.codigoPartida);
   clearSesion();
 }
 
@@ -76,6 +86,7 @@ module.exports = {
   resetForTests,
   guardarEstado,
   cargarEstado,
+  cargarSesionesAulas: dbCargarSesionesAulas,
   guardarSnapshot, // alias
   cargarSnapshot,  // alias
   borrarSnapshot,

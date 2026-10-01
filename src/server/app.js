@@ -81,7 +81,7 @@ function createApp(deps = {}) {
   state.wss = wss;
 
   startHeartbeat(wss, state);
-  attachWebSocketHandlers(wss, ctx);
+  const roomManager = attachWebSocketHandlers(wss, ctx);
 
   const app = {
     httpServer,
@@ -90,6 +90,7 @@ function createApp(deps = {}) {
     ctx,
     config: { adminToken, port, localIp },
     resetForTests: () => {
+      roomManager.reset();
       resetForTests(state);
     },
     handleServerError,
@@ -110,7 +111,7 @@ function createApp(deps = {}) {
      */
     shutdown(done) {
       logger.info("Apagando servidor…");
-      state.estado._shuttingDown = true;
+      for (const room of roomManager.getStates()) room.estado._shuttingDown = true;
 
       // Paso 1: dejar de aceptar nuevas conexiones HTTP
       httpServer.close();
@@ -126,9 +127,11 @@ function createApp(deps = {}) {
       // Paso 3: esperar que los WS clients se cierren solos tras el shutdownMsg, max 500ms
       setTimeout(() => {
         // Paso 4: guardar snapshot si hay partida activa
-        if (state.estado.fase !== FASES.LOBBY) {
-          try { guardarEstado(state.estado); } catch (err) {
-            logger.warn({ err }, "shutdown: error al guardar estado, continuando");
+        for (const room of roomManager.getStates()) {
+          if (room.estado.fase !== FASES.LOBBY) {
+            try { guardarEstado(room.estado); } catch (err) {
+              logger.warn({ err }, "shutdown: error al guardar estado de aula, continuando");
+            }
           }
         }
 

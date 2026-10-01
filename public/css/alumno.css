@@ -495,6 +495,7 @@ body::before {
   min-height: 38px;
 }
 .brand-lockup { display: inline-flex; align-items: center; gap: 7px; color: var(--ink-blue); font-size: 13px; font-weight: 800; letter-spacing: .08em; }
+.student-home-link { text-decoration: none; }
 .brand-lockup strong { color: var(--electric); }
 .brand-mark { display: block; width: 29px; height: 29px; border-radius: 50%; background: var(--paper); box-shadow: 0 3px 12px rgba(21,84,155,.15); }
 .profes-link { color: var(--ink-blue); text-decoration: none; font-size: 11px; font-weight: 800; letter-spacing: .1em; border-bottom: 2px solid var(--sun); padding-bottom: 3px; }
@@ -513,7 +514,7 @@ body::before {
 .eyebrow { color: var(--ink-blue) !important; font-size: 9px !important; font-weight: 900; letter-spacing: .17em; }
 .hero-copy h1 { margin-top: 10px; }
 .hero-copy > p:last-child { margin: 10px auto 0; max-width: 270px; font-size: 13px; }
-.hero-emblem { display: grid; place-items: center; width: 96px; height: 96px; margin: 10px auto 4px; border: 7px solid rgba(255,255,255,.88); border-radius: 50%; background: linear-gradient(145deg, #f5fbff, #acd9f1); color: var(--ink-blue); font-size: 47px; box-shadow: 0 12px 22px rgba(21,84,155,.14); }
+.hero-emblem { display: grid; place-items: center; width: 96px; height: 56px; margin: 10px auto 4px; border: 7px solid rgba(255,255,255,.88); border-radius: 50%; background: linear-gradient(145deg, #f5fbff, #acd9f1); color: var(--ink-blue); font-size: 47px; box-shadow: 0 12px 22px rgba(21,84,155,.14); }
 .hero-emblem img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .quick-start { width: 100%; margin-top: 10px; }
 .section-kicker { display: flex; align-items: center; gap: 8px; margin: 0 5px 8px; color: var(--ink-blue); font-size: 10px; font-weight: 900; letter-spacing: .12em; }

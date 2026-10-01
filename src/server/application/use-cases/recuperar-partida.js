@@ -8,7 +8,7 @@ function ejecutar(ws, msg, state) {
   if (ws !== state.docente) return;
 
   if (msg.accion === "descartar") {
-    borrarSnapshot();
+    borrarSnapshot(state.estado);
     state.estado = crearEstadoInicial();
     state.snapshotRecuperado = false;
     sendDocente(state, {

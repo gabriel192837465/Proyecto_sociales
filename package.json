@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Quiz de historia argentina en tiempo real para el aula",
   "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": "^22 || ^24"
+  },
   "main": "src/server/index.js",
   "scripts": {
     "start": "node --env-file .env src/server/index.js",

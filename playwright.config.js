@@ -1,4 +1,8 @@
 const { defineConfig } = require('@playwright/test');
+const os = require('node:os');
+const path = require('node:path');
+
+const e2eDbDir = path.join(os.tmpdir(), `historia-quiz-playwright-${process.pid}-${Date.now()}`);
 
 module.exports = defineConfig({
   testDir: './tests/e2e',
@@ -22,7 +26,7 @@ module.exports = defineConfig({
       PORT: '3002',
       HISTORIA_ADMIN_TOKEN: process.env.HISTORIA_ADMIN_TOKEN || 'historia',
       HISTORIA_COOKIE_SECRET: process.env.HISTORIA_COOKIE_SECRET || 'playwright-cookie-secret',
-      HISTORIA_DB_PATH: './data/e2e-test.db',
+      HISTORIA_E2E_DB_DIR: e2eDbDir,
       HEARTBEAT_INTERVAL_MS: '3000',
     },
   },

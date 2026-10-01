@@ -60,11 +60,8 @@ test.describe('E2E obligatorio — cuenta institucional + código de partida', (
       const d = await loginDocente(browser, { volverAlLobby: true, seleccionarBanco: true });
       docente = d.page;
 
-      // ── 4-5. Docente crea la partida → código real de 6 dígitos ────
-      await docente.locator('[data-testid="btn-crear-partida"]').click();
-      await expect(docente.locator('#codigo-partida-txt')).toContainText(/\d{6}/, { timeout: 5000 });
-      const codigoTxt = await docente.locator('#codigo-partida-txt').textContent();
-      const codigo = codigoTxt.match(/\d{6}/)[0];
+      // ── 4-5. El helper ya creó la sala y devolvió su código real ────
+      const codigo = d.codigo;
       expect(codigo).toMatch(/^\d{6}$/);
 
       // ── 1-2. Alumno A: crea cuenta institucional y ENTRA (registro
@@ -72,16 +69,13 @@ test.describe('E2E obligatorio — cuenta institucional + código de partida', (
       alumnoA = await browser.newPage();
       const credencialesA = await registrarCuentaAlumno(alumnoA, `E2EA_${suf}`);
 
-      // ── 6-7. Alumno A entra con el código REAL de la partida ───────
-      await ingresarConCodigo(alumnoA, codigo);
-      await expect(alumnoA.locator('#s-espera')).toBeVisible({ timeout: 5000 });
-
-      // Verifica también el login explícito (paso 2 del flujo obligatorio):
-      // cerrar sesión y volver a entrar con las mismas credenciales.
+      // Verifica también el login explícito antes de unirse a la sala.
       await alumnoA.locator('#btn-cerrar-sesion').click();
       await expect(alumnoA.locator('#s-cuenta')).toBeVisible({ timeout: 5000 });
       await loginCuentaAlumno(alumnoA, credencialesA);
       await expect(alumnoA.locator('#cuenta-nombre-display')).toHaveText(`E2EA_${suf}`);
+
+      // ── 6-7. Alumno A entra con el código REAL de la partida ───────
       await ingresarConCodigo(alumnoA, codigo);
       await expect(alumnoA.locator('#s-espera')).toBeVisible({ timeout: 5000 });
 

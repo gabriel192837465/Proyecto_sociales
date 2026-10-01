@@ -6,6 +6,7 @@ Sistema de quiz de historia argentina en tiempo real para el aula. Permite a doc
 
 - **Cuentas de alumno**: los alumnos se registran con su correo institucional (`@alu.tecnica29de6.edu.ar`) y una contraseña; el nombre visible en el juego y el ranking es el nombre de usuario de su cuenta
 - **Código de partida**: el docente crea una partida y obtiene un código de 6 dígitos (más QR) que los alumnos usan para entrar — el código identifica la PARTIDA, la cuenta identifica al ALUMNO
+- **Aulas simultáneas**: cada docente puede mantener su partida independiente; los códigos, alumnos, rankings y eventos no se mezclan entre aulas
 - **Selección automática de banco por curso**: el docente elige el curso (1°/2°/3°) al crear la partida y el sistema resuelve el banco de preguntas correspondiente (configurable en Administración)
 - **Autoavance del juego**: el servidor pasa solo a la siguiente pregunta ~2.5s después de mostrar el resultado — el docente no necesita tocar "Siguiente pregunta" en el flujo normal (los controles manuales siguen disponibles como avanzados)
 - **Panel de Docente**: selección de bancos, curso, timer configurable, botón verde "Iniciar" y botón rojo "Terminar/Reiniciar"
@@ -19,7 +20,7 @@ Sistema de quiz de historia argentina en tiempo real para el aula. Permite a doc
 
 ## 📋 Requisitos
 
-- Node.js 20.6+ (usa `node --env-file`)
+- Node.js 22 o 24 LTS (usa `node --env-file`)
 - Navegador moderno (Chrome, Firefox, Safari, Edge)
 
 ## 🔧 Instalación
@@ -79,6 +80,8 @@ El servidor iniciará en el puerto 3000 (configurable via `PORT` en `.env`).
 6. **Juego**: los alumnos responden dentro del tiempo límite; después de cada resultado el servidor avanza solo a la siguiente pregunta (no hace falta tocar "Siguiente pregunta")
 7. El docente puede terminar o reiniciar la ronda con **Terminar/Reiniciar**; para comenzar una nueva ronda utiliza **Iniciar**
 8. **Fin**: se muestra el ranking final con el detalle de respuestas de cada alumno
+
+Cada panel docente mantiene una sala independiente. Si el mismo docente crea otra partida desde ese panel, la anterior se cierra y sus alumnos reciben un aviso para volver al inicio e ingresar el nuevo código.
 
 ### Cuentas de alumno y administración
 

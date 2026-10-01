@@ -31,7 +31,7 @@ function ejecutar(state) {
     ...buildRankingPayload(state.estado.jugadores),
   });
   broadcast(state, { tipo: "volver_a_lobby" });
-  borrarSnapshot();
+  borrarSnapshot(state.estado);
 }
 
 module.exports = { ejecutar };

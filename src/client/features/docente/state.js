@@ -16,7 +16,7 @@ export const S = {
   // cuando llega `partida_creada` (con el código embebido en la URL).
   serverIP: null,
   serverPort: null,
-  codigoPartida: null
+  codigoPartida: sessionStorage.getItem("historia_quiz_docente_codigo") || null
 };
 
 export function syncJugadoresMap(lista) {

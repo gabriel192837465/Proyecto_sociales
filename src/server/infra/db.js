@@ -62,6 +62,11 @@ function _initDB() {
       preguntas_activas TEXT NOT NULL
     );
 
+      CREATE TABLE IF NOT EXISTS sesiones_aulas (
+        codigo_partida TEXT PRIMARY KEY,
+        estado TEXT NOT NULL
+      );
+
     CREATE TABLE IF NOT EXISTS usuarios (
       id TEXT PRIMARY KEY,
       email TEXT NOT NULL UNIQUE,
@@ -340,6 +345,37 @@ function clearSesion() {
   } catch { /* ignore si la tabla no existe */ }
 }
 
+function cargarSesionesAulas() {
+  const db = _initDB();
+  return db.prepare("SELECT estado FROM sesiones_aulas").all().flatMap(({ estado }) => {
+    try { return [JSON.parse(estado)]; } catch (err) {
+      logger.error({ err }, "cargarSesionesAulas: estado de aula inválido");
+      return [];
+    }
+  });
+}
+
+function guardarEstadoAula(estado) {
+  if (!estado || !estado.codigoPartida) throw new Error("guardarEstadoAula: falta codigoPartida");
+  const db = _initDB();
+  if (estado.tokens) {
+    for (const [id, token] of Object.entries(estado.tokens)) {
+      if (estado.jugadores && estado.jugadores[id]) estado.jugadores[id].token = token;
+    }
+  }
+  db.prepare("INSERT OR REPLACE INTO sesiones_aulas(codigo_partida, estado) VALUES (?, ?)")
+    .run(estado.codigoPartida, JSON.stringify(estado));
+}
+
+function clearSesionAula(codigoPartida) {
+  const db = _initDB();
+  if (codigoPartida) {
+    db.prepare("DELETE FROM sesiones_aulas WHERE codigo_partida = ?").run(codigoPartida);
+  } else {
+    db.prepare("DELETE FROM sesiones_aulas").run();
+  }
+}
+
 // ── Usuarios (cuentas de alumno) ───────────────────────────────────────────
 
 function _rowToUsuario(row) {
@@ -456,6 +492,9 @@ module.exports = {
   cargarEstado,
   guardarEstado,
   clearSesion,
+  cargarSesionesAulas,
+  guardarEstadoAula,
+  clearSesionAula,
   crearUsuario,
   buscarUsuarioPorEmail,
   buscarUsuarioPorNombreUsuario,

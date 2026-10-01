@@ -16,6 +16,7 @@ const { handleVolverALobby, handleReiniciarRankingGeneral } = require("./handler
 const { ejecutar: handleCambiarNombre } = require("./handlers/cambiar-nombre");
 const { handleRecuperarPartida } = require("./handlers/recuperar-partida");
 const { handleCrearPartida } = require("./handlers/crear-partida");
+const { createRoomManager } = require("./room-manager");
 
 // R3-001: un id de cookie que no sea UUIDv4 NUNCA se asigna como identidad
 // (gatekeeper fix): si se aceptara, llegaría a reconstruirEstado/registrarNuevo
@@ -41,6 +42,7 @@ const validTipos = new Set(Object.keys(handlers));
 
 function attachWebSocketHandlers(wss, ctx) {
   const { state } = ctx;
+  const roomManager = createRoomManager(state);
 
   wss.on("connection", (ws, req) => {
     wsConnections.inc();
@@ -101,6 +103,11 @@ function attachWebSocketHandlers(wss, ctx) {
         msg.id = ws.alumnoId;
       }
 
+      const state = roomManager.resolve(ws, msg);
+      if (!state) {
+        ws.send(JSON.stringify({ tipo: "codigo_invalido", mensaje: "Código de partida inválido o finalizado." }));
+        return;
+      }
       const id = state.alumnos.get(ws);
       if (id && msg.tipo !== "alumno_entra") {
         state.estado.tokens = state.estado.tokens || {};
@@ -134,12 +141,26 @@ function attachWebSocketHandlers(wss, ctx) {
 
       const handler = handlers[msg.tipo];
       if (handler) {
+        if (msg.tipo === "crear_partida" && ws === state.docente && ws.esDocenteAutenticado) {
+          roomManager.closeCurrentGame(state);
+          state.codigosPartidaEnUso = new Set(roomManager.getStates().flatMap((room) => room.estado.codigoPartida ? [room.estado.codigoPartida] : []));
+          handler(ws, msg, state, ctx);
+          roomManager.registerRoom(state, state.estado.codigoPartida);
+          return;
+        }
         handler(ws, msg, state, ctx);
+        if (msg.tipo === "docente_conecta" && ws === state.docente && ws.esDocenteAutenticado) {
+          state._teacherClaimed = true;
+        }
       }
     });
 
     ws.on("close", () => {
       wsConnections.dec();
+      const state = roomManager.getState(ws);
+      if (!state) return;
+      roomManager.detach(ws);
+      state.wss.clients.delete(ws);
       const id = state.alumnos.get(ws);
       if (id) {
         // R4-002 (fix stale close): la entrada del socket que cierra se
@@ -215,6 +236,8 @@ function attachWebSocketHandlers(wss, ctx) {
       }
     });
   });
+
+  return roomManager;
 }
 
 module.exports = { attachWebSocketHandlers };

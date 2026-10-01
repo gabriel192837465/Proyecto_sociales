@@ -18,7 +18,7 @@ La aplicacion usa HTTP para las pantallas y WebSocket para el juego en tiempo re
 
 En la computadora del docente:
 
-1. Instalar Node.js 20.6 o superior y pnpm 11.
+1. Instalar Node.js 22 o 24 LTS y pnpm 11.
 2. Abrir PowerShell en la carpeta del proyecto.
 3. Instalar dependencias:
 

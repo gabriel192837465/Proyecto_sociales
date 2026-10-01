@@ -1,4 +1,4 @@
-import { state, setWS, setMiId, setMiNombre, setMiRespuesta, setMiPuntaje, setTiempoMax, setJugadoresSala, setPendienteEnvio, setSessionToken, setCodigoPartida } from "./state.js";
+import { state, setWS, setMiId, setMiNombre, setMiRespuesta, setMiPuntaje, setTiempoMax, setJugadoresSala, setPendienteEnvio, setSessionToken, setCodigoPartida, setAutoReconectando } from "./state.js";
 import { esc } from "../../shared/dom.js";
 import { setPantalla, mostrarPregunta, mostrarResultado, mostrarFin, actualizarTimer, restaurarOpciones } from "./views.js";
 import { conectar as wsConectar, onMensaje, enviar as wsEnviar, setAutoReconnectEnabled } from "../../shared/socket-client.js";
@@ -7,6 +7,7 @@ import { mostrarToast } from "./toast.js";
 let registrado = false;
 let ultimoMensajeEnviado = null;
 let hasConnectedBefore = false;
+let cerrandoPorPartidaEliminada = false;
 // REQ-UI-09 (D3): escape hatch para token_rotado SIN token del servidor.
 // Se resetea en bienvenido (sesión reparada). Con N=3 el loop nunca es infinito.
 let tokenRotadoAttempts = 0;
@@ -35,6 +36,10 @@ export function conectar() {
     },
     onClose() {
       ultimoMensajeEnviado = null;
+      if (cerrandoPorPartidaEliminada) {
+        cerrandoPorPartidaEliminada = false;
+        return;
+      }
       mostrarToast("Conexión perdida. Intentando reconectar...", "err", { duracion: 0 });
     }
   });
@@ -54,6 +59,7 @@ export function enviar(tipo, extra) {
 export function manejarMensaje(msg) {
   switch (msg.tipo) {
     case "bienvenido":
+      setAutoReconectando(false);
       // D3: sesión reparada → el contador de token_rotado arranca de cero.
       tokenRotadoAttempts = 0;
       // D6 (REQ-OFF-01): el E2E observa la reconexión real vía data attribute.
@@ -263,18 +269,50 @@ export function manejarMensaje(msg) {
       }
       break;
     case "codigo_invalido":
+      const eraReconexiónAutomática = state.autoReconectando;
+      setAutoReconectando(false);
       setAutoReconnectEnabled(false);
       if (state.ws) { state.ws.close(); setWS(null); }
       setPantalla("s-unirse");
       {
         const errEl = document.getElementById("error-nombre");
         if (errEl) {
-          errEl.textContent = msg.mensaje || "Código de partida inválido o finalizado.";
-          errEl.style.display = "block";
+          errEl.textContent = eraReconexiónAutomática ? "" : (msg.mensaje || "Código de partida inválido o finalizado.");
+          errEl.style.display = eraReconexiónAutomática ? "none" : "block";
+        }
+        if (eraReconexiónAutomática) {
+          setCodigoPartida("");
+          setSessionToken("");
+          const inputCodigo = document.getElementById("input-codigo");
+          if (inputCodigo) inputCodigo.value = "";
+          try {
+            localStorage.removeItem("historia_quiz_codigo");
+            localStorage.removeItem("historia_quiz_token");
+            sessionStorage.removeItem("historia_quiz_token");
+          } catch (e) {}
         }
         const btnEntrar = document.getElementById("btn-entrar");
         if (btnEntrar) btnEntrar.disabled = false;
       }
+      break;
+    case "partida_eliminada":
+      cerrandoPorPartidaEliminada = true;
+      setAutoReconnectEnabled(false);
+      if (state.ws) {
+        state.ws.close();
+        setWS(null);
+      }
+      setSessionToken("");
+      setCodigoPartida("");
+      setMiRespuesta(null);
+      setPendienteEnvio(false);
+      try {
+        localStorage.removeItem("historia_quiz_codigo");
+        localStorage.removeItem("historia_quiz_token");
+        sessionStorage.removeItem("historia_quiz_token");
+      } catch (e) {}
+      setPantalla("s-cuenta");
+      mostrarToast(msg.mensaje || "La partida se cerró. Volvé al inicio para unirte a otra.", "err", { duracion: 7000 });
       break;
   }
 }

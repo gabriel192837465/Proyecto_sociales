@@ -111,12 +111,15 @@ test.describe('Historia Quiz - flujo completo', () => {
   });
 
   test('error si el alumno usa nombre duplicado', async ({ browser }) => {
+    let docente = null;
     let a1 = null;
     let a2 = null;
     try {
       const suf = SUFFIX();
       const nombre = `Dup_${suf}`;
 
+      const d = await loginDocente(browser);
+      docente = d.page;
       const first = await unirseAlumno(browser, nombre);
       a1 = first.page;
       // Con cuentas institucionales, el choque de nombre duplicado en una
@@ -130,6 +133,7 @@ test.describe('Historia Quiz - flujo completo', () => {
       await ingresarConCodigo(a2);
       await expect(a2.locator('#error-nombre')).toBeVisible({ timeout: 5000 });
     } finally {
+      if (docente) await docente.close().catch(() => {});
       try { if (a1) await a1.close(); if (a2) await a2.close(); } catch {}
     }
   });
@@ -734,7 +738,7 @@ test.describe('Historia Quiz - flujo completo', () => {
       admin = await browser.newPage();
       await loginAdmin(admin);
 
-      await admin.locator('.btn-nuevo-banco').click();
+      await admin.getByRole('button', { name: '👁️ Nuevo banco' }).click();
       await expect(admin.locator('#modal-banco')).toBeVisible({ timeout: 5000 });
       await admin.locator('#b-nombre').fill(nombreBanco);
       await admin.locator('#b-nivel').selectOption('Secundario');

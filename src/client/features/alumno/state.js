@@ -12,6 +12,7 @@ export const state = {
   // Código de partida de 6 dígitos (sección 6-8) — distinto de la cuenta del
   // alumno. Se necesita en cada alumno_entra (incluidas las reconexiones).
   codigoPartida: "",
+  autoReconectando: false,
   // Cuenta institucional autenticada (sección 3-9), o null si no hay sesión.
   cuenta: null
 };
@@ -28,4 +29,5 @@ export function setPendienteEnvio(v) { state.pendienteEnvio = !!v; }
 export function setSessionToken(t) { state.sessionToken = t; }
 export function getSessionToken() { return state.sessionToken; }
 export function setCodigoPartida(c) { state.codigoPartida = c; }
+export function setAutoReconectando(v) { state.autoReconectando = !!v; }
 export function setCuenta(u) { state.cuenta = u; }

@@ -1,11 +1,11 @@
 # ── Stage 1: Install dependencies ──────────────────────────────────────
-FROM node:22-alpine AS deps
+FROM node:24-alpine AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN corepack enable && pnpm install --frozen-lockfile --prod
 
 # ── Stage 2: Runtime ──────────────────────────────────────────────────
-FROM node:22-alpine
+FROM node:24-alpine
 WORKDIR /app
 
 # Non-root user for security

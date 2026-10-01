@@ -346,8 +346,28 @@ describe('alumno/index', () => {
       expect(document.getElementById('s-cuenta').classList.contains('activa')).toBe(true);
     });
 
-    test('con cuenta + código guardado, reconecta automáticamente (alumno_entra con código)', async () => {
+    test('con cuenta + código guardado pero sin token, no intenta entrar automáticamente', async () => {
       localStorage.setItem('historia_quiz_codigo', '482731');
+      global.fetch = jest.fn((url) => {
+        if (String(url).includes('/api/alumno/me')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ usuario: { id: 'u1', nombreUsuario: 'Ana', rol: 'alumno' } })
+          });
+        }
+        return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
+      });
+      jest.resetModules();
+      require('../../src/client/features/alumno/index');
+      await flush();
+      expect(mockEnviar).not.toHaveBeenCalledWith(expect.objectContaining({ tipo: 'alumno_entra' }));
+      expect(document.getElementById('input-codigo').value).toBe('');
+      expect(document.getElementById('s-unirse').classList.contains('activa')).toBe(true);
+    });
+
+    test('con cuenta + código y token guardados, restaura la sesión de juego', async () => {
+      localStorage.setItem('historia_quiz_codigo', '482731');
+      localStorage.setItem('historia_quiz_token', 'token-juego');
       global.fetch = jest.fn((url) => {
         if (String(url).includes('/api/alumno/me')) {
           return Promise.resolve({

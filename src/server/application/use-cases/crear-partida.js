@@ -22,7 +22,9 @@ const { getCursoBancoMap } = require("../../infra/db");
  * bancoId explícito al iniciar).
  */
 function ejecutar(state, msg = {}) {
-  const codigo = generarCodigoPartida(state.estado.codigoPartida);
+  const codigosActivos = new Set(state.codigosPartidaEnUso || []);
+  if (state.estado.codigoPartida) codigosActivos.add(state.estado.codigoPartida);
+  const codigo = generarCodigoPartida(codigosActivos);
   state.estado.codigoPartida = codigo;
 
   let bancoAutoError = null;

@@ -31,9 +31,14 @@ function crearEstadoInicial() {
  */
 function generarCodigoPartida(codigoActivo) {
   let codigo;
+  const estaOcupado = (candidato) => {
+    if (typeof codigoActivo === "string") return candidato === codigoActivo;
+    if (codigoActivo && typeof codigoActivo.has === "function") return codigoActivo.has(candidato);
+    return false;
+  };
   do {
     codigo = String(Math.floor(Math.random() * 1000000)).padStart(6, "0");
-  } while (/^(\d)\1{5}$/.test(codigo) || codigo === codigoActivo);
+  } while (/^(\d)\1{5}$/.test(codigo) || estaOcupado(codigo));
   return codigo;
 }
 
