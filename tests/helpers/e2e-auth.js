@@ -51,14 +51,12 @@ async function loginDocente(browser, options = {}) {
 
   await expect(page.locator('#pantalla-lobby')).toBeVisible({ timeout: 10000 });
 
+  await selectBancoConPreguntas(page);
   await page.locator('[data-testid="btn-crear-partida"]').click();
   await expect(page.locator('#codigo-partida-txt')).toContainText(/\d{6}/, { timeout: 5000 });
   codigoSalaE2E = (await page.locator('#codigo-partida-txt').textContent()).match(/\d{6}/)[0];
 
-  let banco = null;
-  if (seleccionarBanco) {
-    await selectBancoConPreguntas(page);
-  }
+  const banco = seleccionarBanco ? await selectBancoConPreguntas(page) : null;
 
   return { page, cerrar, banco, codigo: codigoSalaE2E };
 }
@@ -105,23 +103,20 @@ async function volverAlLobby(page) {
 async function selectBancoConPreguntas(page, options = {}) {
   const { porNombre } = options;
 
-  await expect(async () => {
-    const optionTexts = await page.locator('#banco-select option').allTextContents();
-    let selectedIndex = -1;
-
-    for (let i = 0; i < optionTexts.length; i++) {
-      const txt = optionTexts[i];
-      // Skip placeholder and empty-bank options
-      if (txt.includes('0 preg.') || txt.includes('Elegí un banco')) continue;
-      // If porNombre is specified, only match that bank
-      if (porNombre && !txt.includes(porNombre)) continue;
-      selectedIndex = i;
-      break;
-    }
-
-    expect(selectedIndex).toBeGreaterThan(0);
-    await page.locator('#banco-select').selectOption({ index: selectedIndex });
-  }).toPass({ timeout: 10000 });
+  await page.waitForFunction(({ nombre }) =>
+    Array.isArray(S?.bancosCache) && S.bancosCache.some((b) =>
+      Number(b.cantidad) > 0 && (!nombre || b.nombre.includes(nombre))
+    ), { nombre: porNombre }, { timeout: 10000 });
+  const banco = await page.evaluate(({ nombre }) => {
+    const item = S.bancosCache.find((b) =>
+      Number(b.cantidad) > 0 && (!nombre || b.nombre.includes(nombre))
+    );
+    return item ? { id: item.id, anio: item.anio } : null;
+  }, { nombre: porNombre });
+  if (!banco) throw new Error('No hay un banco con preguntas disponible para seleccionar.');
+  await page.locator('#curso-select').selectOption(banco.anio);
+  await page.locator('#banco-select').selectOption(banco.id);
+  return banco;
 }
 
 /**

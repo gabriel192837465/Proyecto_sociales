@@ -171,46 +171,35 @@ describe("Código de partida de 6 dígitos", () => {
     await closeWS(docenteB.ws);
   });
 
-  describe("selección automática de banco por curso (sección 13)", () => {
-    it("crear_partida con curso mapeado resuelve el banco automáticamente", async () => {
+  describe("selección de banco por año", () => {
+    it("crea la partida con el banco elegido aunque no haya un mapeo administrativo", async () => {
       const bancoId = "banco_1";
-      await request(server)
-        .post("/api/curso-banco")
-        .set("X-Admin-Token", ADMIN_TOKEN)
-        .send({ curso: "1°", bancoId });
-
       const docente = await connectDocente(wsUrl, ADMIN_TOKEN);
-      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "1°" }));
+      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "2°", bancoId }));
       const creada = await waitFor(docente.messages, (m) => m.tipo === "partida_creada");
 
-      expect(creada.curso).toBe("1°");
+      expect(creada.curso).toBe("2°");
       expect(creada.bancoIdSeleccionado).toBe(bancoId);
       expect(creada.avisoBanco).toBeUndefined();
 
       await closeWS(docente.ws);
     });
 
-    it("crear_partida con curso sin mapear avisa pero igual crea la partida", async () => {
+    it("rechaza un banco que no corresponde al año elegido", async () => {
       const docente = await connectDocente(wsUrl, ADMIN_TOKEN);
-      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "3°" }));
-      const creada = await waitFor(docente.messages, (m) => m.tipo === "partida_creada");
+      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "1°", bancoId: "banco_1" }));
+      const error = await waitFor(docente.messages, (m) => m.tipo === "error");
 
-      expect(creada.codigo).toMatch(/^\d{6}$/);
-      expect(creada.bancoIdSeleccionado).toBeNull();
-      expect(creada.avisoBanco).toMatch(/No hay un banco/);
+      expect(error.msg).toMatch(/no está disponible para ese año/i);
+      expect(docente.messages.some((m) => m.tipo === "partida_creada")).toBe(false);
 
       await closeWS(docente.ws);
     });
 
-    it("iniciar_juego sin bancoId explícito usa el banco resuelto por curso", async () => {
+    it("iniciar_juego usa el banco explícito guardado al crear la partida", async () => {
       const bancoId = "banco_1";
-      await request(server)
-        .post("/api/curso-banco")
-        .set("X-Admin-Token", ADMIN_TOKEN)
-        .send({ curso: "1°", bancoId });
-
       const docente = await connectDocente(wsUrl, ADMIN_TOKEN);
-      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "1°" }));
+      docente.ws.send(JSON.stringify({ tipo: "crear_partida", curso: "2°", bancoId }));
       const { codigo } = await waitFor(docente.messages, (m) => m.tipo === "partida_creada");
 
       const alumno = await openWS(wsUrl);

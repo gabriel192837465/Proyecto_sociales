@@ -1,14 +1,17 @@
 /**
  * @jest-environment jsdom
  */
-const { onBancoChange, mostrarError, ocultarError, pedirClave, mostrarAuthError, cargarBancos } = require('../../src/client/features/docente/api.js');
+const { onBancoChange, onCursoChange, mostrarError, ocultarError, pedirClave, mostrarAuthError, cargarBancos } = require('../../src/client/features/docente/api.js');
 const { S } = require('../../src/client/features/docente/state.js');
 
 describe('docente/api', () => {
   beforeEach(() => {
     document.body.innerHTML = `
+      <select id="curso-select"><option value="1°">1°</option><option value="3°" selected>3°</option></select>
       <select id="banco-select"><option value="">– Elegí un banco –</option></select>
       <div id="banco-meta"></div>
+      <div id="banco-disponibilidad"></div>
+      <button data-action="crear-partida"></button>
       <div id="error-box" style="display:none"></div>
       <div class="overlay" id="modal-auth" style="display:none"></div>
       <div id="auth-error-box" style="display:none"></div>
@@ -30,6 +33,36 @@ describe('docente/api', () => {
       document.getElementById('banco-select').innerHTML = '<option value="b1">Banco</option>';
       document.getElementById('banco-select').value = 'b1';
       expect(() => onBancoChange()).not.toThrow();
+    });
+
+    test('habilita crear sólo después de elegir un banco', () => {
+      S.bancosCache = [{ id: 'b1', nombre: 'Banco', nivel: 'S', anio: '3°', tema: 'H', cantidad: 5 }];
+      document.getElementById('banco-select').innerHTML = '<option value="b1">Banco</option>';
+      document.getElementById('banco-select').value = 'b1';
+      onBancoChange();
+      expect(document.querySelector('[data-action="crear-partida"]').disabled).toBe(false);
+    });
+  });
+
+  describe('onCursoChange', () => {
+    test('filtra bancos por año y excluye los vacíos', () => {
+      S.bancosCache = [
+        { id: 'b1', nombre: 'Primero', anio: '1°', cantidad: 4 },
+        { id: 'b2', nombre: 'Tercero', anio: '3°', cantidad: 3 },
+        { id: 'b3', nombre: 'Vacío', anio: '3°', cantidad: 0 }
+      ];
+      onCursoChange();
+      const options = [...document.getElementById('banco-select').options].map((option) => option.value);
+      expect(options).toEqual(['', 'b2']);
+      expect(document.getElementById('banco-select').disabled).toBe(false);
+    });
+
+    test('muestra disponibilidad vacía cuando el año no tiene bancos con preguntas', () => {
+      S.bancosCache = [{ id: 'b1', nombre: 'Primero', anio: '1°', cantidad: 0 }];
+      document.getElementById('curso-select').value = '1°';
+      onCursoChange();
+      expect(document.getElementById('banco-select').disabled).toBe(true);
+      expect(document.getElementById('banco-disponibilidad').textContent).toContain('No hay bancos');
     });
   });
 

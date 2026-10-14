@@ -1,6 +1,6 @@
 import { S, setToken, clearToken } from "./state.js";
 import { enviar } from "./socket.js";
-import { cargarBancos, pedirClave, ocultarError, mostrarError, mostrarAuthError, onBancoChange } from "./api.js";
+import { cargarBancos, pedirClave, ocultarError, mostrarError, mostrarAuthError, onBancoChange, onCursoChange } from "./api.js";
 import { manejarMensaje } from "./manejar-mensaje.js";
 import { conectar as wsConectar, onMensaje, getWS } from "../../shared/socket-client.js";
 import { mostrarToast } from "./toast.js";
@@ -75,7 +75,11 @@ const reiniciarRankingGeneral = () => enviar("reiniciar_ranking_general");
 const crearPartida = () => {
   const cursoSelect = document.getElementById("curso-select");
   const curso = cursoSelect ? cursoSelect.value : "";
-  enviar("crear_partida", curso ? { curso } : {});
+  const bancoId = document.getElementById("banco-select")?.value || "";
+  if (!curso) { mostrarError("Seleccioná el año de la partida."); return; }
+  if (!bancoId) { mostrarError("Seleccioná un banco disponible para ese año."); return; }
+  ocultarError();
+  enviar("crear_partida", { curso, bancoId });
 };
 
 const autenticarDocente = () => {
@@ -212,6 +216,8 @@ document.addEventListener("change", (e) => {
   const action = target.dataset.action;
   if (action === "banco-change") {
     onBancoChange();
+  } else if (action === "curso-change") {
+    onCursoChange();
   }
 });
 

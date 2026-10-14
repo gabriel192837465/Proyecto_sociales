@@ -14,7 +14,9 @@ beforeAll(() => {
   document.body.innerHTML = `
     <div id="estado-cx"></div>
     <div id="error-box" style="display:none"></div>
+    <select id="curso-select"><option value="2°" selected>2°</option></select>
     <select id="banco-select"><option value="">– Elegí un banco –</option></select>
+    <button data-action="crear-partida"></button>
     <select id="tiempo-select"><option value="20">20</option></select>
     <div id="pantalla-lobby"><p></p></div>
     <div class="overlay" id="modal-auth" style="display:none">
@@ -89,6 +91,13 @@ describe('docente/index', () => {
     document.getElementById('banco-select').value = 'b1';
     window.iniciarJuego();
     expect(mockEnviar).toHaveBeenCalled();
+  });
+
+  test('crearPartida envía año y banco seleccionados', () => {
+    document.getElementById('banco-select').innerHTML = '<option value="banco_1">Test</option>';
+    document.getElementById('banco-select').value = 'banco_1';
+    window.crearPartida();
+    expect(mockEnviar).toHaveBeenCalledWith({ tipo: 'crear_partida', curso: '2°', bancoId: 'banco_1' });
   });
 
   test('autenticarDocente con password vacío muestra error', () => {

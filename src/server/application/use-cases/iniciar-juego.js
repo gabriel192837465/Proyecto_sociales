@@ -52,6 +52,10 @@ function ejecutar(state, msg) {
     sendDocente(state, { tipo: "error", msg: "El banco seleccionado está vacío." });
     return false;
   }
+  if (state.estado.cursoSeleccionado && String(banco.anio || "").trim() !== state.estado.cursoSeleccionado) {
+    sendDocente(state, { tipo: "error", msg: "El banco seleccionado no está disponible para el año de la partida." });
+    return false;
+  }
 
   const tNum = Number(msg.tiempoPorPregunta);
   state.estado.tiempoPorPregunta =

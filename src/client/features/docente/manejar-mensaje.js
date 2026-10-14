@@ -202,15 +202,8 @@ const DISPATCH_TABLE = {
     if (msg.bancoIdSeleccionado) {
       const select = document.getElementById("banco-select");
       if (select) select.value = msg.bancoIdSeleccionado;
-    }
-    const avisoBox = document.getElementById("aviso-banco-box");
-    if (avisoBox) {
-      if (msg.avisoBanco) {
-        avisoBox.textContent = msg.avisoBanco;
-        avisoBox.style.display = "block";
-      } else {
-        avisoBox.style.display = "none";
-      }
+      const crearBtn = document.querySelector('[data-action="crear-partida"]');
+      if (crearBtn) crearBtn.disabled = false;
     }
   },
   partida_recuperada(msg) {

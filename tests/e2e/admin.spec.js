@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { ADMIN_TOKEN, SUFFIX, loginAdmin, registrarCuentaAlumno, ingresarConCodigo } = require('../helpers/e2e-auth');
+const { ADMIN_TOKEN, SUFFIX, loginAdmin, registrarCuentaAlumno, ingresarConCodigo, selectBancoConPreguntas } = require('../helpers/e2e-auth');
 
 test.describe('Administración - Bancos de Preguntas', () => {
 
@@ -385,17 +385,11 @@ test.describe('Administración - Bancos de Preguntas', () => {
         await docente.waitForFunction(() => S.pantallaActual === 'lobby', { timeout: 5000 }).catch(() => {});
       }
       await expect(docente.locator('#pantalla-lobby')).toBeVisible({ timeout: 10000 });
+      await selectBancoConPreguntas(docente, { porNombre: nombreBanco });
       await docente.locator('[data-testid="btn-crear-partida"]').click();
       await expect(docente.locator('#codigo-partida-txt')).toContainText(/\d{6}/, { timeout: 5000 });
       const codigo = (await docente.locator('#codigo-partida-txt').textContent()).match(/\d{6}/)[0];
 
-      // Seleccionar el banco recién creado por su nombre en el dropdown
-      await expect(async () => {
-        const options = await docente.locator('#banco-select option').allTextContents();
-        const idx = options.findIndex(t => t.includes(nombreBanco));
-        expect(idx).toBeGreaterThan(0);
-        await docente.locator('#banco-select').selectOption({ index: idx });
-      }).toPass({ timeout: 10000 });
       await expect(docente.locator('#banco-meta')).toContainText('1');
 
       alumno = await browser.newPage();

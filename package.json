@@ -8,9 +8,9 @@
   },
   "main": "src/server/index.js",
   "scripts": {
-    "start": "node --env-file .env src/server/index.js",
+    "start": "node scripts/stop-port.js && node --env-file .env src/server/index.js",
     "stop": "node scripts/stop-port.js",
-    "restart": "node scripts/stop-port.js && node src/server/index.js",
+    "restart": "node scripts/stop-port.js && node --env-file .env src/server/index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

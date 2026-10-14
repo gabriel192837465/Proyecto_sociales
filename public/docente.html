@@ -10,7 +10,7 @@
 <body>
 <div class="app">
   <header>
-    <div class="logo"><img src="assets/logo-et29.svg" alt="Escuela Técnica 29"><h1>Trivia ET29</h1></div>
+    <div class="logo"><img src="assets/logo-et29.png" alt="Escuela Técnica 29"><h1>Trivia ET29</h1></div>
     <div class="header-links">
       <span id="estado-cx" class="estado-conexion">Conectando...</span>
       <a href="admin.html" class="link-admin">📚 Administrar preguntas</a>
@@ -22,13 +22,21 @@
   <main>
     <div class="panel-izq">
 
-      <!-- SELECTOR DE BANCO -->
+      <!-- CONFIGURACIÓN DE PARTIDA -->
       <div class="card" id="card-banco">
-        <div class="card-title">📚 Seleccionar banco de preguntas</div>
+        <div class="card-title">🎓 Configurar partida</div>
         <div class="banco-selector">
-          <select class="banco-select" id="banco-select" data-action="banco-change">
-            <option value="">– Elegí un banco –</option>
+          <select class="banco-select" id="curso-select" data-action="curso-change" aria-label="Año de la partida">
+            <option value="">– Elegí el año –</option>
+            <option value="1°">1° año</option>
+            <option value="2°">2° año</option>
+            <option value="3°">3° año</option>
           </select>
+          <select class="banco-select" id="banco-select" data-action="banco-change" disabled>
+            <option value="">– Primero elegí el año –</option>
+          </select>
+          <div class="banco-meta" id="banco-disponibilidad" role="status"></div>
+          <div class="banco-meta" id="banco-meta"></div>
           <div class="tiempo-selector-row">
             <label class="tiempo-selector-label">Tiempo por pregunta:</label>
             <select class="banco-select tiempo-selector-select" id="tiempo-select">
@@ -40,7 +48,6 @@
               <option value="60">60 segundos</option>
             </select>
           </div>
-          <div class="banco-meta" id="banco-meta"></div>
           <div class="error-box" id="error-box"></div>
         </div>
       </div>
@@ -49,15 +56,8 @@
       <div class="card" id="card-partida">
         <div class="card-title">🎟️ Crear partida</div>
         <div class="banco-selector">
-          <select class="banco-select" id="curso-select">
-            <option value="">– Curso (opcional) –</option>
-            <option value="1°">1° año</option>
-            <option value="2°">2° año</option>
-            <option value="3°">3° año</option>
-          </select>
-          <button class="btn btn-gold" data-action="crear-partida" data-testid="btn-crear-partida">🎟️ Crear partida</button>
+          <button class="btn btn-gold" data-action="crear-partida" data-testid="btn-crear-partida" disabled>🎟️ Crear partida</button>
           <div class="banco-meta" id="codigo-partida-txt"></div>
-          <div class="error-box" id="aviso-banco-box"></div>
         </div>
       </div>
 

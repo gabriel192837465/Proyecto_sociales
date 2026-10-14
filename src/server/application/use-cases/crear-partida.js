@@ -1,7 +1,6 @@
 const { generarCodigoPartida } = require("../../domain/game");
 const { sendDocente } = require("../game-session");
 const { guardarEstado } = require("../app-state");
-const { getCursoBancoMap } = require("../../infra/db");
 
 /**
  * El docente crea una partida nueva: genera un código de 6 dígitos que
@@ -13,42 +12,41 @@ const { getCursoBancoMap } = require("../../infra/db");
  * No reinicia jugadores ya conectados: eso lo sigue haciendo `iniciar_juego`
  * al elegir el banco, igual que antes.
  *
- * Sección 13/20: si el docente manda `curso` (p. ej. "1°"), se resuelve el
- * banco correspondiente vía el mapeo curso→banco configurado en
- * administración y se guarda en el estado — así "Comenzar" (iniciar_juego)
- * ya no necesita que el docente elija el banco a mano en el flujo normal.
- * Si el curso no tiene banco mapeado, se informa el error pero la partida
- * igual se crea (el docente puede resolverlo desde administración o pasar
- * bancoId explícito al iniciar).
+ * Si el cliente manda curso y banco, se valida que el banco esté disponible
+ * para ese año antes de crear la partida. El flujo antiguo sin ambos campos
+ * sigue permitido para clientes que sólo necesitan generar un código.
  */
 function ejecutar(state, msg = {}) {
+  const curso = msg.curso ? String(msg.curso).trim() : null;
+  const bancoId = msg.bancoId ? String(msg.bancoId).trim() : null;
+  if (curso || bancoId) {
+    if (!curso || !bancoId || !["1°", "2°", "3°"].includes(curso)) {
+      sendDocente(state, { tipo: "error", msg: "Seleccioná un año y un banco disponible." });
+      return null;
+    }
+    const banco = state.db.bancos.find((item) => item.id === bancoId);
+    if (!banco || String(banco.anio || "").trim() !== curso || !banco.preguntas.length) {
+      sendDocente(state, { tipo: "error", msg: "El banco seleccionado no está disponible para ese año." });
+      return null;
+    }
+    state.estado.cursoSeleccionado = curso;
+    state.estado.bancoIdSeleccionado = bancoId;
+  } else {
+    state.estado.cursoSeleccionado = null;
+    state.estado.bancoIdSeleccionado = null;
+  }
+
   const codigosActivos = new Set(state.codigosPartidaEnUso || []);
   if (state.estado.codigoPartida) codigosActivos.add(state.estado.codigoPartida);
   const codigo = generarCodigoPartida(codigosActivos);
   state.estado.codigoPartida = codigo;
-
-  let bancoAutoError = null;
-  const curso = msg.curso ? String(msg.curso).trim() : null;
-  if (curso) {
-    const mapa = getCursoBancoMap();
-    const bancoId = mapa[curso];
-    if (bancoId && state.db.bancos.some((b) => b.id === bancoId)) {
-      state.estado.cursoSeleccionado = curso;
-      state.estado.bancoIdSeleccionado = bancoId;
-    } else {
-      state.estado.cursoSeleccionado = curso;
-      state.estado.bancoIdSeleccionado = null;
-      bancoAutoError = `No hay un banco de preguntas configurado para ${curso}. Podés elegirlo manualmente en Administración.`;
-    }
-  }
 
   guardarEstado(state.estado);
   sendDocente(state, {
     tipo: "partida_creada",
     codigo,
     curso: state.estado.cursoSeleccionado || null,
-    bancoIdSeleccionado: state.estado.bancoIdSeleccionado || null,
-    ...(bancoAutoError ? { avisoBanco: bancoAutoError } : {})
+    bancoIdSeleccionado: state.estado.bancoIdSeleccionado || null
   });
   return codigo;
 }
