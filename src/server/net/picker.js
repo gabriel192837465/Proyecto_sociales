@@ -62,23 +62,16 @@ module.exports = {
 };
 
 async function preguntarPorSnapshot() {
-  if (!process.stdin.isTTY) {
-    return true; // En CI o sin TTY, asume usar el snapshot por defecto
+  const envValue = process.env.HISTORIA_RECUPERAR_SNAPSHOT;
+  if (envValue !== undefined) {
+    return envValue === "true" || envValue === "1" || envValue === "yes" || envValue === "y";
   }
 
-  const rl = require("readline").createInterface({ input: process.stdin, output: process.stdout });
-  
-  return new Promise((resolve) => {
-    rl.question(`\nSe detectó una partida inconclusa (snapshot).\n¿Deseas reanudarla? [Y/n]: `, (resp) => {
-      const answer = resp.trim().toLowerCase();
-      if (answer === 'n' || answer === 'no') {
-        resolve(false);
-      } else {
-        resolve(true);
-      }
-      rl.close();
-    });
-    rl.on("close", () => resolve(true));
-    rl.on("error", () => { rl.close(); resolve(true); });
-  });
+  if (process.argv.includes("--recover-snapshot")) return true;
+  if (process.argv.includes("--discard-snapshot")) return false;
+
+  // En uso real del aula, no bloquear el arranque con un prompt interactivo.
+  // Si se quiere reanudar manualmente, se debe forzar explícitamente con la variable
+  // de entorno HISTORIA_RECUPERAR_SNAPSHOT=true o con el flag --recover-snapshot.
+  return false;
 }

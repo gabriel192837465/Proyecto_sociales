@@ -170,6 +170,10 @@ async function registrarCuentaAlumno(page, nombre) {
  */
 async function loginCuentaAlumno(page, { email, password }) {
   await page.goto("/alumno.html");
+  const accountPanel = page.locator("#account-panel");
+  if (!(await accountPanel.evaluate((el) => el.classList.contains("visible")))) {
+    await page.locator('[data-action="mostrar-cuenta"]').click();
+  }
   await page.locator("#login-email").fill(email);
   await page.locator("#login-password").fill(password);
   await page.locator("#btn-login").click({ force: true });
