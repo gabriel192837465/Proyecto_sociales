@@ -3,7 +3,7 @@ const { token } = state;
 import { autenticarAdmin, cargarSidebar, seleccionarBanco, abrirModalBanco, guardarBanco, borrarBanco } from "./api.js";
 import { abrirModalPregunta, abrirSelectorTipoPregunta, seleccionarTipoPregunta, guardarPregunta, borrarPregunta, confirmarBorrarPregunta, actualizarCamposTipo } from "./api.js";
 import { abrirModalImport, switchImport, leerCSV, importar, cerrarModal } from "./api.js";
-import { mostrarUsuarios, toggleUsuarioActivo } from "./usuarios.js";
+import { mostrarUsuarios, toggleUsuarioActivo, eliminarCuentaUsuario } from "./usuarios.js";
 
 // Re-exportar toast para que los tests (y cualquier consumidor externo) puedan
 // importarlo desde el entry point del módulo, igual que antes.
@@ -58,6 +58,7 @@ const MANEJADORES = {
   "delete-pregunta": (el) => confirmarBorrarPregunta(el.dataset.bancoId, el.dataset.pregId),
   "import": () => abrirModalImport(),
   "toggle-usuario-activo": (el) => toggleUsuarioActivo(el.dataset.usuarioId, el.dataset.usuarioActivo === "1"),
+  "eliminar-usuario": (el) => eliminarCuentaUsuario(el.dataset.usuarioId, el.dataset.usuarioNombre),
 };
 
 // Acciones estáticas (botones del HTML). El segundo elemento es la función a

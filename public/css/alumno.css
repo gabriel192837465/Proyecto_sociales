@@ -707,6 +707,42 @@ body::before {
 #s-pregunta .game-footer { font-size: 8px; }
 .score-pill { font-size: 8px; }
 
+#s-cuenta {
+  gap: 10px;
+  padding: 18px 20px 16px;
+  overflow-y: auto;
+}
+#s-cuenta > .world-map { position: absolute; }
+#s-cuenta .hero-emblem { margin-top: 18px; }
+#s-cuenta .hero-copy { margin-top: 8px; }
+#s-cuenta .quick-start { margin-top: 8px; }
+#s-cuenta > .account-panel {
+  position: relative;
+  inset: auto;
+  order: 4;
+  width: 100%;
+  max-height: 0;
+  padding: 0 14px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-height .25s ease, padding .25s ease, opacity .2s ease;
+}
+#s-cuenta > .account-panel.visible {
+  max-height: 520px;
+  padding: 14px;
+  opacity: 1;
+  pointer-events: auto;
+}
+#s-cuenta > .bottom-nav {
+  position: relative;
+  inset: auto;
+  order: 6;
+  width: 100%;
+  margin-top: auto;
+  flex: 0 0 auto;
+}
+
 #s-fin { gap: 9px; }
 #s-fin .flag { margin-top: 50px; width: 50px; height: 50px; display: grid; place-items: center; border-radius: 50%; background: var(--sun); font-size: 24px; }
 #s-fin h1 { font-size: 29px; }
@@ -729,5 +765,6 @@ body::before {
 
 @media (min-width: 700px) {
   .screen { margin: 20px auto; min-height: calc(100vh - 40px); border-radius: 28px; overflow: hidden; box-shadow: 0 20px 60px rgba(28,91,141,.2); }
+  #s-cuenta { height: auto; min-height: calc(100vh - 40px); }
   body { padding: 20px; }
 }

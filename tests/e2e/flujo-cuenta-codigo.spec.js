@@ -36,6 +36,32 @@ const {
  */
 test.describe('E2E obligatorio — cuenta institucional + código de partida', () => {
 
+  test('el login y la barra inferior no se superponen en móvil', async ({ page }) => {
+    for (const viewport of [{ width: 390, height: 740 }, { width: 1280, height: 900 }]) {
+      await page.setViewportSize(viewport);
+      await page.goto('/alumno.html');
+      await page.locator('[data-action="mostrar-cuenta"]').click();
+      await expect(page.locator('#account-panel')).toBeVisible();
+
+      const boxes = await page.evaluate(() => {
+        const rect = (selector) => {
+          const { top, bottom } = document.querySelector(selector).getBoundingClientRect();
+          return { top, bottom };
+        };
+        return {
+          title: rect('.hero-copy h1'),
+          logo: rect('.hero-emblem'),
+          account: rect('#account-panel'),
+          navigation: rect('.bottom-nav')
+        };
+      });
+
+      expect(boxes.logo.top).toBeLessThan(150);
+      expect(boxes.title.bottom).toBeLessThan(boxes.account.top);
+      expect(boxes.account.bottom).toBeLessThan(boxes.navigation.top);
+    }
+  });
+
   test.beforeAll(async ({ browser }) => {
     const page = await browser.newPage();
     try {

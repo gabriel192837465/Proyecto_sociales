@@ -192,6 +192,38 @@ describe('Cuentas de alumno (registro / login)', () => {
         .send({ activo: false })
         .expect(404);
     });
+
+    it('DELETE /api/admin/usuarios/:id requiere token admin', async () => {
+      const lista = await request(server).get('/api/admin/usuarios').set('X-Admin-Token', ADMIN_TOKEN);
+      const juanp = lista.body.usuarios.find((u) => u.nombreUsuario === 'juanp');
+      await request(server).delete(`/api/admin/usuarios/${juanp.id}`).expect(401);
+    });
+
+    it('DELETE /api/admin/usuarios/:id borra cuenta y puntaje permanente', async () => {
+      const lista = await request(server).get('/api/admin/usuarios').set('X-Admin-Token', ADMIN_TOKEN);
+      const juanp = lista.body.usuarios.find((u) => u.nombreUsuario === 'juanp');
+      const db = require('../../src/server/infra/db');
+      db.sumarPuntajeRankingGeneral(juanp.id, 700);
+
+      await request(server)
+        .delete(`/api/admin/usuarios/${juanp.id}`)
+        .set('X-Admin-Token', ADMIN_TOKEN)
+        .expect(200);
+
+      expect(db.buscarUsuarioPorId(juanp.id)).toBeNull();
+      expect(db.listarRankingGeneral().some((u) => u.id === juanp.id)).toBe(false);
+      await request(server)
+        .post('/api/alumno/login')
+        .send({ email: juanp.email, password: PASSWORD_VALIDA })
+        .expect(401);
+    });
+
+    it('DELETE /api/admin/usuarios/:id responde 404 si no existe', async () => {
+      await request(server)
+        .delete('/api/admin/usuarios/no-existe')
+        .set('X-Admin-Token', ADMIN_TOKEN)
+        .expect(404);
+    });
   });
 
   describe('POST /api/alumno/login', () => {

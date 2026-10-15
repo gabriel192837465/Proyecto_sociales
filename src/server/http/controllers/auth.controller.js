@@ -100,6 +100,15 @@ function handleSetUsuarioActivo(req, res, usuarioId, adminToken) {
   });
 }
 
+function handleEliminarUsuario(req, res, usuarioId, ctx) {
+  if (!requireAdmin(req, res, ctx && ctx.adminToken)) return;
+  const usuario = db.buscarUsuarioPorId(usuarioId);
+  if (!usuario || usuario.rol !== "alumno") return json(res, { error: "no_encontrado" }, 404);
+  if (!db.eliminarUsuario(usuarioId)) return json(res, { error: "no_encontrado" }, 404);
+  ctx?.roomManager?.eliminarUsuarioDeSalas(usuarioId, usuario.nombreUsuario);
+  return json(res, { ok: true });
+}
+
 // POST /api/alumno/registro — crea una cuenta de alumno con correo institucional.
 // Requisitos: sección 3 del pedido (correo @alu.tecnica29de6.edu.ar, password hasheada, sin datos personales extra).
 function handleRegistro(req, res) {
@@ -237,6 +246,13 @@ function handleAuthApi(req, res, pathname, ctx) {
     const matchActivo = pathname.match(/^\/api\/admin\/usuarios\/([^/]+)\/activo$/);
     if (req.method === "POST" && matchActivo) {
       handleSetUsuarioActivo(req, res, matchActivo[1], ctx && ctx.adminToken);
+      return true;
+    }
+  }
+  {
+    const matchEliminar = pathname.match(/^\/api\/admin\/usuarios\/([^/]+)$/);
+    if (req.method === "DELETE" && matchEliminar) {
+      handleEliminarUsuario(req, res, matchEliminar[1], ctx);
       return true;
     }
   }

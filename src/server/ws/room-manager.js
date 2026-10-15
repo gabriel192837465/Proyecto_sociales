@@ -109,6 +109,47 @@ function createRoomManager(defaultState) {
     if (state === defaultState) require("../application/app-state").borrarSnapshot();
   }
 
+  function eliminarUsuarioDeSalas(usuarioId, nombreUsuario) {
+    let eliminados = 0;
+    const nombreNormalizado = String(nombreUsuario || "").toLowerCase();
+    for (const state of states) {
+      const jugadoresEliminados = [];
+      for (const [id, jugador] of Object.entries(state.estado.jugadores || {})) {
+        if (jugador.usuarioId !== usuarioId && String(jugador.nombre || "").toLowerCase() !== nombreNormalizado) continue;
+        jugadoresEliminados.push({ id, nombre: jugador.nombre, online: jugador.online !== false });
+        delete state.estado.jugadores[id];
+        delete state.estado.respuestasActuales[id];
+        delete state.estado.tokens?.[id];
+        if (state.estado.fase === "pregunta" && jugador.online !== false) {
+          state.estado.totalJugadoresPregunta = Math.max(0, state.estado.totalJugadoresPregunta - 1);
+        }
+        for (const [ws, jugadorId] of state.alumnos) {
+          if (jugadorId !== id) continue;
+          state.alumnos.delete(ws);
+          state.alumnoSocketPorId.delete(id);
+          stateBySocket.delete(ws);
+          state.wss.clients.delete(ws);
+          try { ws.close(4001, "Cuenta eliminada"); } catch { /* conexión en cierre */ }
+        }
+      }
+
+      if (!jugadoresEliminados.length) continue;
+      eliminados += jugadoresEliminados.length;
+      const { sendDocente, broadcast, buildRankingPayload } = require("../application/game-session");
+      for (const jugador of jugadoresEliminados) {
+        sendDocente(state, {
+          tipo: "jugador_salio",
+          id: jugador.id,
+          nombre: jugador.nombre,
+          ...buildRankingPayload(state.estado.jugadores),
+        });
+        broadcast(state, { tipo: "jugador_salio_alumno", nombre: jugador.nombre });
+      }
+      try { require("../application/app-state").guardarEstado(state.estado); } catch { /* la baja ya fue aplicada en memoria y DB */ }
+    }
+    return eliminados;
+  }
+
   function registerRoom(state, codigo) {
     state.codigosPartidaEnUso = new Set(roomsByCode.keys());
     if (codigo) roomsByCode.set(codigo, state);
@@ -139,6 +180,7 @@ function createRoomManager(defaultState) {
   return {
     resolve,
     closeCurrentGame,
+    eliminarUsuarioDeSalas,
     registerRoom,
     getState(ws) { return stateBySocket.get(ws) || null; },
     detach,

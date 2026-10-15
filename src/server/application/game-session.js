@@ -1,18 +1,29 @@
 const {
   getRanking,
-  getRankingGeneral,
   registrarHistorialPregunta
 } = require("../domain/game");
 const { PUNTAJE_RESPUESTA_CORRECTA, BROADCAST_BACKPRESSURE_THRESHOLD } = require("../domain/constants");
 const { TIMER_TICK_MS, FASES, AUTO_AVANCE_RESULTADO_MS } = require("../domain/constants");
 const { guardarEstado } = require("./app-state");
+const db = require("../infra/db");
 const logger = require("../infra/logger");
 const { broadcastDropsTotal } = require("../infra/metrics");
 
 function buildRankingPayload(jugadores) {
+  const cuentas = db.listarRankingGeneral();
+  const idsCuenta = new Set(cuentas.map((jugador) => jugador.id));
+  const nombresCuenta = new Set(cuentas.map((jugador) => jugador.nombre.toLowerCase()));
+  const jugadoresAnonimos = Object.entries(jugadores)
+    .filter(([id, jugador]) =>
+      !jugador.usuarioId && !idsCuenta.has(id) && !nombresCuenta.has(String(jugador.nombre || "").toLowerCase())
+    )
+    .map(([id, jugador]) => ({ id, nombre: jugador.nombre, puntajeGeneral: jugador.puntajeGeneral || 0 }));
+  const rankingGeneral = [...cuentas, ...jugadoresAnonimos]
+    .sort((a, b) => b.puntajeGeneral - a.puntajeGeneral)
+    .slice(0, 20);
   return {
     jugadores: getRanking(jugadores),
-    rankingGeneral: getRankingGeneral(jugadores),
+    rankingGeneral,
   };
 }
 
@@ -63,6 +74,7 @@ function mostrarResultado(state) {
     if (resp === p.correcta && j) {
       j.puntaje += PUNTAJE_RESPUESTA_CORRECTA;
       j.puntajeGeneral = (j.puntajeGeneral || 0) + PUNTAJE_RESPUESTA_CORRECTA;
+      if (j.usuarioId) db.sumarPuntajeRankingGeneral(j.usuarioId, PUNTAJE_RESPUESTA_CORRECTA);
     }
   }
   registrarHistorialPregunta(state.estado, state.estado.preguntaIdx);

@@ -82,6 +82,7 @@ function createApp(deps = {}) {
 
   startHeartbeat(wss, state);
   const roomManager = attachWebSocketHandlers(wss, ctx);
+  ctx.roomManager = roomManager;
 
   const app = {
     httpServer,

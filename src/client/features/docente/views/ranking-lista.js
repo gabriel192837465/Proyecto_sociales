@@ -16,7 +16,7 @@ export function actualizarRanking(lista) {
 
 export function actualizarRankingGeneral(lista) {
   const el = document.getElementById("ranking-general-lista");
-  const visibles = (lista || []).filter(j => S.jugadoresOnline[j.id] !== false || j.puntajeGeneral > 0);
+  const visibles = lista || [];
   if (!visibles.length) {
     el.innerHTML = '<p class="vacio-ranking-txt">Sin jugadores aún</p>';
     return;

@@ -74,3 +74,7 @@ export async function fetchUsuarios(q) {
 export async function setUsuarioActivo(id, activo) {
   return apiFetch(`/api/admin/usuarios/${id}/activo`, { method: "POST", body: JSON.stringify({ activo }) });
 }
+
+export async function deleteUsuario(id) {
+  return apiFetch(`/api/admin/usuarios/${id}`, { method: "DELETE" });
+}

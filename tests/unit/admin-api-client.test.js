@@ -182,5 +182,14 @@ describe('admin/api-client', () => {
       }));
       expect(res.usuario.activo).toBe(false);
     });
+
+    test('deleteUsuario elimina una cuenta por id', async () => {
+      mockFetch(200, { ok: true });
+      const res = await apiClient.deleteUsuario('u1');
+      expect(global.fetch).toHaveBeenCalledWith('/api/admin/usuarios/u1', expect.objectContaining({
+        method: 'DELETE'
+      }));
+      expect(res.ok).toBe(true);
+    });
   });
 });

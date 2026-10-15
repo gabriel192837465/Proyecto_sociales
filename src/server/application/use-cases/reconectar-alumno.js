@@ -49,6 +49,7 @@ function reconstruirEstado(ws, state, id, nombre, token) {
 
   const j = state.estado.jugadores[id];
   j.online = true;
+  if (ws.usuarioId) j.usuarioId = ws.usuarioId;
   state.alumnos.set(ws, id);
   // R4-002: este socket pasa a ser el VIGENTE del id — el close del socket
   // viejo (zombie OPEN hasta el heartbeat) se ignora como stale.
@@ -164,6 +165,7 @@ function registrarNuevo(ws, msg, state) {
     
   state.estado.jugadores[id] = {
     nombre,
+    usuarioId: ws.usuarioId || null,
     puntaje: 0,
     puntajeGeneral: 0,
     respondioActual: false,

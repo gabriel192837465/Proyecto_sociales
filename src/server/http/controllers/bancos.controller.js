@@ -28,6 +28,7 @@ function toStr(v) { return String(v ?? ""); }
 
 const TIPOS_PREGUNTA = new Set(["multiple_choice", "true_false", "completion", "media"]);
 const MEDIA_TIPOS = new Set(["", "image", "audio"]);
+const LETRAS_RESPUESTA = { A: 0, B: 1, C: 2, D: 3 };
 
 function validarPregunta(body) {
   const pregunta = toStr(body.pregunta).trim();
@@ -185,7 +186,6 @@ async function handleBancosApi(req, res, pathname, { db, adminToken, state }) {
       const body = await parseBody(req);
       if (!body || typeof body !== "object") return json(res, { error: "Cuerpo inválido" }, 400);
 
-      const letras = { A: 0, B: 1, C: 2, D: 3 };
       let importadas = 0;
       let omitidas = 0;
       const errores = [];
@@ -194,7 +194,7 @@ async function handleBancosApi(req, res, pathname, { db, adminToken, state }) {
       // Maneja correctamente "" escapes, ; dentro de comillas, y celdas
       // multi-línea. La columna correcta acepta solo letras A/B/C/D.
       // csv-parse con relax_column_count: true casi nunca throwea; el
-      // per-row cols.length !== 7 cubre los casos de columnas incorrectas.
+      // per-row column count check accepts legacy 7-col and typed 11-col rows.
       // Si el CSV entero está malformado (p.ej. comilla sin cerrar que
       // rompe el stream), propagamos el error al try/catch exterior que
       // devuelve 500 — un CSV totalmente inválido no debe importarse en
@@ -210,20 +210,47 @@ async function handleBancosApi(req, res, pathname, { db, adminToken, state }) {
 
       filas.forEach((cols, i) => {
         const linea = i + HEADER_LINE_COUNT + 1;
-        if (cols.length !== 7) { omitidas++; errores.push({ linea, motivo: `columnas=${cols.length}` }); return; }
-        const [pregunta, opA, opB, opC, opD, cLetra, epoca] = cols.map((c) => String(c ?? "").trim());
-        if (!pregunta || !opA || !opB || !opC || !opD) { omitidas++; errores.push({ linea, motivo: "campos_vacios" }); return; }
-        const cUpper = (cLetra || "A").toUpperCase();
-        // Object.hasOwn (no `in`) para evitar prototype keys como "toString"
-        // que escribirían un Function en pregunta.correcta.
-        if (!Object.hasOwn(letras, cUpper)) { omitidas++; errores.push({ linea, motivo: `correcta_invalida=${cLetra}` }); return; }
-        banco.preguntas.push({
-          id: generarIdUnico(),
+        if (cols.length !== 7 && cols.length !== 11) {
+          omitidas++;
+          errores.push({ linea, motivo: `columnas=${cols.length}` });
+          return;
+        }
+
+        const values = cols.map((c) => String(c ?? "").trim());
+        const legacy = values.length === 7;
+        const [tipo, pregunta, opA, opB, opC, opD, correctaTexto, epoca, materia, mediaTipoRaw, mediaUrl] = legacy
+          ? ["multiple_choice", ...values, "Historia", "", ""]
+          : values;
+        const tipoNormalizado = tipo.toLowerCase();
+        if (!TIPOS_PREGUNTA.has(tipoNormalizado)) {
+          omitidas++;
+          errores.push({ linea, motivo: `tipo_invalido=${tipo}` });
+          return;
+        }
+        const respuesta = (legacy ? correctaTexto || "A" : correctaTexto).toUpperCase();
+        if (!Object.hasOwn(LETRAS_RESPUESTA, respuesta)) {
+          omitidas++;
+          errores.push({ linea, motivo: `correcta_invalida=${correctaTexto}` });
+          return;
+        }
+        const mediaTipo = ({ imagen: "image", image: "image", audio: "audio" })[mediaTipoRaw.toLowerCase()] || mediaTipoRaw;
+        const opciones = tipoNormalizado === "true_false" ? [opA, opB] : [opA, opB, opC, opD];
+        const preguntaValidada = validarPregunta({
           pregunta,
-          opciones: [opA, opB, opC, opD],
-          correcta: letras[cUpper],
-          epoca: epoca || "General"
+          opciones,
+          correcta: LETRAS_RESPUESTA[respuesta],
+          epoca,
+          materia,
+          tipo: tipoNormalizado,
+          mediaTipo,
+          mediaUrl
         });
+        if (preguntaValidada.error) {
+          omitidas++;
+          errores.push({ linea, motivo: preguntaValidada.error });
+          return;
+        }
+        banco.preguntas.push({ id: generarIdUnico(), ...preguntaValidada });
         importadas++;
       });
       guardarDB(db);

@@ -482,6 +482,27 @@ describe('API REST Integration Tests', () => {
       expect(response.body.importadas).toBe(2);
     });
 
+    it('importa multiple choice, verdadero/falso, completar y media desde CSV extendido', async () => {
+      const fs = require('node:fs');
+      const path = require('node:path');
+      const csv = fs.readFileSync(path.join(__dirname, '..', '..', 'data', 'plantilla-preguntas.csv'), 'utf8');
+
+      const response = await request(server)
+        .post('/api/bancos/banco_1/importar-csv')
+        .set('X-Admin-Token', ADMIN_TOKEN)
+        .send({ csv })
+        .expect(200);
+
+      expect(response.body).toMatchObject({ importadas: 6, omitidas: 0 });
+      const preguntas = server.app.state.db.bancos.find((b) => b.id === 'banco_1').preguntas;
+      expect(preguntas.slice(-6).map((q) => q.tipo)).toEqual([
+        'multiple_choice', 'multiple_choice', 'true_false', 'completion', 'media', 'media'
+      ]);
+      expect(preguntas.at(-4).opciones).toEqual(['Verdadero', 'Falso']);
+      expect(preguntas.at(-2)).toMatchObject({ mediaTipo: 'image', mediaUrl: 'https://example.com/imagen-tucuman.jpg' });
+      expect(preguntas.at(-1)).toMatchObject({ mediaTipo: 'audio', mediaUrl: 'https://example.com/audio.mp3' });
+    });
+
     it('debería retornar 404 para banco inexistente', async () => {
       const response = await request(server)
         .post('/api/bancos/banco_inexistente/importar-csv')

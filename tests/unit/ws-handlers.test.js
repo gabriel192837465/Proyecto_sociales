@@ -3,7 +3,7 @@ const { handleRecuperarPartida } = require("../../src/server/ws/handlers/recuper
 const { handleDocenteConecta } = require("../../src/server/ws/handlers/docente-conecta");
 const { handleAlternarPausa } = require("../../src/server/ws/handlers/pausar");
 const { handleSiguientePregunta, handleMostrarResultadoManual } = require("../../src/server/ws/handlers/siguiente-pregunta");
-const { handleVolverALobby, handleReiniciarRankingGeneral } = require("../../src/server/ws/handlers/volver-lobby");
+const { handleVolverALobby } = require("../../src/server/ws/handlers/volver-lobby");
 
 jest.mock("../../src/server/application/use-cases/alternar-pausa", () => ({
   ejecutar: jest.fn(),
@@ -13,9 +13,6 @@ jest.mock("../../src/server/application/use-cases/avanzar-pregunta", () => ({
   mostrarResultadoManual: jest.fn(),
 }));
 jest.mock("../../src/server/application/use-cases/volver-lobby", () => ({
-  ejecutar: jest.fn(),
-}));
-jest.mock("../../src/server/application/use-cases/reiniciar-ranking", () => ({
   ejecutar: jest.fn(),
 }));
 
@@ -68,7 +65,6 @@ const { borrarSnapshot } = require("../../src/server/application/app-state");
 const { ejecutar: mockAlternarPausa } = require("../../src/server/application/use-cases/alternar-pausa");
 const { siguiente: mockSiguiente, mostrarResultadoManual: mockMostrarResultadoManual } = require("../../src/server/application/use-cases/avanzar-pregunta");
 const { ejecutar: mockVolverLobby } = require("../../src/server/application/use-cases/volver-lobby");
-const { ejecutar: mockReiniciarRanking } = require("../../src/server/application/use-cases/reiniciar-ranking");
 
 
 function makeWs() {
@@ -642,22 +638,5 @@ describe("US1 - Secure Docente WS Actions", () => {
     expect(mockVolverLobby).toHaveBeenCalledWith(state);
   });
 
-  it("debería retornar temprano en handleReiniciarRankingGeneral si falla requireDocenteWs", () => {
-    const ws = makeWs();
-    const state = makeState();
-    handleReiniciarRankingGeneral(ws, {}, state);
-    expect(ws.send).toHaveBeenCalledWith(
-      JSON.stringify({ tipo: "error", msg: "No autorizado." })
-    );
-    expect(mockReiniciarRanking).not.toHaveBeenCalled();
-  });
-
-  it("debería ejecutar reiniciarRanking si requireDocenteWs tiene éxito", () => {
-    const ws = makeWs();
-    ws.esDocenteAutenticado = true;
-    const state = makeState({ docente: ws });
-    handleReiniciarRankingGeneral(ws, {}, state);
-    expect(mockReiniciarRanking).toHaveBeenCalledWith(state);
-  });
 });
 

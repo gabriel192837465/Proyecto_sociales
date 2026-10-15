@@ -1,6 +1,7 @@
-pregunta;opcionA;opcionB;opcionC;opcionD;correcta;epoca
-¿En qué año se produjo la Revolución de Mayo?;1810;1816;1806;1820;A;Independencia
-¿Quién lideró el cruce de los Andes para liberar Chile?;Manuel Belgrano;Martín de Güemes;José de San Martín;Bernardino Rivadavia;C;Independencia
-¿En qué año se declaró la Independencia argentina?;1810;1816;1820;1813;B;Independencia
-¿Quién creó la bandera argentina?;José de San Martín;Manuel Belgrano;Mariano Moreno;Juan José Castelli;B;Independencia
-¿En qué ciudad se firmó la Independencia?;Buenos Aires;Córdoba;Tucumán;Salta;C;Independencia
+tipo;pregunta;opcionA;opcionB;opcionC;opcionD;correcta;epoca;materia;mediaTipo;mediaUrl
+multiple_choice;¿En qué año se produjo la Revolución de Mayo?;1810;1816;1806;1820;A;Independencia;Historia;;
+multiple_choice;¿Quién lideró el cruce de los Andes para liberar Chile?;Manuel Belgrano;Martín de Güemes;José de San Martín;Bernardino Rivadavia;C;Independencia;Historia;;
+true_false;¿La Independencia argentina se declaró en 1816?;Verdadero;Falso;;;A;Independencia;Historia;;
+completion;Completá: Manuel Belgrano creó la ___ argentina.;bandera;escuela;ciudad;moneda;A;Independencia;Historia;;
+media;¿Qué lugar muestra la imagen?;Tucumán;Córdoba;Salta;Buenos Aires;A;Independencia;Geografía;image;https://example.com/imagen-tucuman.jpg
+media;¿Qué instrumento se escucha en el audio?;Guitarra;Tambor;Flauta;Piano;B;General;Música;audio;https://example.com/audio.mp3

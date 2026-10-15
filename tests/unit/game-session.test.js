@@ -3,8 +3,19 @@ const {
   sendDocente,
   mostrarResultado,
   iniciarTimer,
-  jugadoresOnline
+  jugadoresOnline,
+  buildRankingPayload
 } = require("../../src/server/application/game-session");
+const rankingDb = require("../../src/server/infra/db");
+
+jest.mock("../../src/server/infra/db", () => {
+  const actual = jest.requireActual("../../src/server/infra/db");
+  return {
+    ...actual,
+    listarRankingGeneral: jest.fn(() => []),
+    sumarPuntajeRankingGeneral: jest.fn(),
+  };
+});
 
 function makeClient(readyState) {
   return { readyState, send: jest.fn() };
@@ -168,6 +179,34 @@ describe("mostrarResultado", () => {
 
     expect(state.estado.jugadores.id1.puntaje).toBe(100);
     expect(state.estado.jugadores.id1.puntajeGeneral).toBe(600);
+  });
+
+  it("persiste los puntos de una cuenta institucional", () => {
+    const state = makeState({
+      respuestasActuales: { jugador: 0 },
+      jugadores: {
+        jugador: { usuarioId: "usuario-1", nombre: "Ana", puntaje: 0, puntajeGeneral: 300, historial: [] }
+      }
+    });
+
+    mostrarResultado(state);
+
+    expect(rankingDb.sumarPuntajeRankingGeneral).toHaveBeenCalledWith("usuario-1", 100);
+  });
+
+  it("arma el ranking general con cuentas persistentes aunque estén offline", () => {
+    rankingDb.listarRankingGeneral.mockReturnValue([
+      { id: "usuario-1", nombre: "Ana", puntajeGeneral: 900 }
+    ]);
+    const payload = buildRankingPayload({
+      jugadorOffline: { nombre: "Ana", puntajeGeneral: 900, online: false },
+      invitado: { nombre: "Invitado", puntajeGeneral: 200, online: false }
+    });
+
+    expect(payload.rankingGeneral).toEqual([
+      { id: "usuario-1", nombre: "Ana", puntajeGeneral: 900 },
+      { id: "invitado", nombre: "Invitado", puntajeGeneral: 200 }
+    ]);
   });
 
   it("debería cambiar fase a resultado", () => {

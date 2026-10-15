@@ -1,4 +1,4 @@
-import { fetchUsuarios, setUsuarioActivo } from "./api-client.js";
+import { fetchUsuarios, setUsuarioActivo, deleteUsuario } from "./api-client.js";
 import { esc } from "../../shared/dom.js";
 import { toast } from "./toast.js";
 
@@ -16,6 +16,10 @@ function renderFilaUsuario(u) {
                 data-usuario-id="${esc(u.id)}" data-usuario-activo="${u.activo ? "1" : "0"}">
           ${esc(btnTxt)}
         </button>
+        <button class="btn btn-red btn-sm" data-action="eliminar-usuario"
+                data-usuario-id="${esc(u.id)}" data-usuario-nombre="${esc(u.nombreUsuario)}">
+          Eliminar
+        </button>
       </td>
     </tr>`;
 }
@@ -27,7 +31,7 @@ function renderTabla(usuarios) {
   return `
     <table class="tabla-usuarios">
       <thead>
-        <tr><th>Nombre de usuario</th><th>Correo institucional</th><th>Estado</th><th></th></tr>
+        <tr><th>Nombre de usuario</th><th>Correo institucional</th><th>Estado</th><th>Acciones</th></tr>
       </thead>
       <tbody id="usuarios-tbody">
         ${usuarios.map(renderFilaUsuario).join("")}
@@ -77,6 +81,18 @@ export async function toggleUsuarioActivo(id, activoActual) {
   try {
     await setUsuarioActivo(id, !activoActual);
     toast(!activoActual ? "Cuenta activada." : "Cuenta desactivada.", "ok");
+    const buscarInput = document.getElementById("usuarios-buscar");
+    await mostrarUsuariosRecargando(buscarInput ? buscarInput.value.trim() : undefined);
+  } catch (err) {
+    toast(`Error: ${err.message}`, "err");
+  }
+}
+
+export async function eliminarCuentaUsuario(id, nombreUsuario) {
+  if (!window.confirm(`¿Eliminar la cuenta ${nombreUsuario} y sus datos de juego? Esta acción no se puede deshacer.`)) return;
+  try {
+    await deleteUsuario(id);
+    toast("Cuenta y datos eliminados.", "ok");
     const buscarInput = document.getElementById("usuarios-buscar");
     await mostrarUsuariosRecargando(buscarInput ? buscarInput.value.trim() : undefined);
   } catch (err) {

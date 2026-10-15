@@ -8,6 +8,34 @@ const DEFAULT_SQLITE_PATH = path.join(__dirname, "..", "..", "..", "data", "hist
 
 let _db = null;
 
+function migrarRankingDesdeSnapshots(db) {
+  const usuarios = db.prepare("SELECT id, nombre_usuario FROM usuarios WHERE rol = 'alumno'").all();
+  const cuentas = new Map(usuarios.map((usuario) => [usuario.nombre_usuario.toLowerCase(), usuario.id]));
+  const idsCuenta = new Set(usuarios.map((usuario) => usuario.id));
+  const upsert = db.prepare(`
+    INSERT INTO ranking_general(usuario_id, puntaje) VALUES (?, ?)
+    ON CONFLICT(usuario_id) DO UPDATE SET puntaje = MAX(puntaje, excluded.puntaje)
+  `);
+  const importarJugadores = (jugadores) => {
+    if (!jugadores || typeof jugadores !== "object") return;
+    for (const jugador of Object.values(jugadores)) {
+      const usuarioId = jugador.usuarioId || cuentas.get(String(jugador.nombre || "").toLowerCase());
+      const puntaje = Number(jugador.puntajeGeneral);
+      if (usuarioId && idsCuenta.has(usuarioId) && Number.isFinite(puntaje) && puntaje > 0) {
+        upsert.run(usuarioId, puntaje);
+      }
+    }
+  };
+
+  const sesion = db.prepare("SELECT jugadores FROM sesiones WHERE id = 1").get();
+  if (sesion) {
+    try { importarJugadores(JSON.parse(sesion.jugadores)); } catch { /* snapshot inválido: se conserva */ }
+  }
+  for (const row of db.prepare("SELECT estado FROM sesiones_aulas").all()) {
+    try { importarJugadores(JSON.parse(row.estado).jugadores); } catch { /* snapshot inválido: se conserva */ }
+  }
+}
+
 function _getDbPath() {
   return process.env.HISTORIA_DB_PATH || DEFAULT_SQLITE_PATH;
 }
@@ -77,6 +105,11 @@ function _initDB() {
       activo INTEGER NOT NULL DEFAULT 1
     );
 
+    CREATE TABLE IF NOT EXISTS ranking_general (
+      usuario_id TEXT PRIMARY KEY REFERENCES usuarios(id) ON DELETE CASCADE,
+      puntaje INTEGER NOT NULL DEFAULT 0
+    );
+
     CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email);
     CREATE INDEX IF NOT EXISTS idx_usuarios_nombre_usuario ON usuarios(nombre_usuario);
   `);
@@ -93,6 +126,8 @@ function _initDB() {
   if (!columnas.includes("banco_id_seleccionado")) {
     _db.exec("ALTER TABLE sesiones ADD COLUMN banco_id_seleccionado TEXT");
   }
+
+  migrarRankingDesdeSnapshots(_db);
 
   const columnasPreguntas = _db.prepare("PRAGMA table_info(preguntas)").all().map(c => c.name);
   if (!columnasPreguntas.includes("tipo")) _db.exec("ALTER TABLE preguntas ADD COLUMN tipo TEXT DEFAULT 'multiple_choice'");
@@ -437,6 +472,73 @@ function setUsuarioActivo(id, activo) {
   db.prepare("UPDATE usuarios SET activo = ? WHERE id = ?").run(activo ? 1 : 0, id);
 }
 
+function sumarPuntajeRankingGeneral(usuarioId, puntos) {
+  const incremento = Number(puntos);
+  if (!usuarioId || !Number.isSafeInteger(incremento) || incremento <= 0) return;
+  const db = _initDB();
+  db.prepare(`
+    INSERT INTO ranking_general(usuario_id, puntaje) VALUES (?, ?)
+    ON CONFLICT(usuario_id) DO UPDATE SET puntaje = puntaje + excluded.puntaje
+  `).run(usuarioId, incremento);
+}
+
+function listarRankingGeneral() {
+  const db = _initDB();
+  return db.prepare(`
+    SELECT u.id, u.nombre_usuario AS nombre, COALESCE(r.puntaje, 0) AS puntajeGeneral
+    FROM usuarios u
+    LEFT JOIN ranking_general r ON r.usuario_id = u.id
+    WHERE u.rol = 'alumno'
+    ORDER BY puntajeGeneral DESC, u.nombre_usuario COLLATE NOCASE ASC
+  `).all();
+}
+
+function eliminarUsuario(id) {
+  const db = _initDB();
+  const usuario = buscarUsuarioPorId(id);
+  if (!usuario || usuario.rol !== "alumno") return false;
+
+  const quitarJugador = (estado) => {
+    if (!estado?.jugadores) return false;
+    let cambio = false;
+    for (const [jugadorId, jugador] of Object.entries(estado.jugadores)) {
+      const vinculado = jugador.usuarioId === id || jugador.nombre?.toLowerCase() === usuario.nombreUsuario.toLowerCase();
+      if (!vinculado) continue;
+      delete estado.jugadores[jugadorId];
+      if (estado.respuestasActuales) delete estado.respuestasActuales[jugadorId];
+      if (estado.tokens) delete estado.tokens[jugadorId];
+      cambio = true;
+    }
+    return cambio;
+  };
+
+  const tx = db.transaction(() => {
+    const sesion = db.prepare("SELECT jugadores, respuestas_actuales FROM sesiones WHERE id = 1").get();
+    if (sesion) {
+      try {
+        const estado = { jugadores: JSON.parse(sesion.jugadores), respuestasActuales: JSON.parse(sesion.respuestas_actuales) };
+        if (quitarJugador(estado)) {
+          db.prepare("UPDATE sesiones SET jugadores = ?, respuestas_actuales = ? WHERE id = 1")
+            .run(JSON.stringify(estado.jugadores), JSON.stringify(estado.respuestasActuales));
+        }
+      } catch { /* conservar snapshots inválidos sin bloquear la baja */ }
+    }
+
+    for (const row of db.prepare("SELECT codigo_partida, estado FROM sesiones_aulas").all()) {
+      try {
+        const estado = JSON.parse(row.estado);
+        if (quitarJugador(estado)) {
+          db.prepare("UPDATE sesiones_aulas SET estado = ? WHERE codigo_partida = ?")
+            .run(JSON.stringify(estado), row.codigo_partida);
+        }
+      } catch { /* conservar snapshots inválidos sin bloquear la baja */ }
+    }
+    db.prepare("DELETE FROM usuarios WHERE id = ?").run(id);
+  });
+  tx();
+  return true;
+}
+
 // ── Meta (clave/valor genérico) y mapeo curso → banco ──────────────────────
 // Sección 13 del pedido: "1° año → Ciencias Sociales - 1°", etc. Se guarda
 // como configuración (tabla `meta`, ya existente en el schema) en vez de
@@ -501,6 +603,9 @@ module.exports = {
   buscarUsuarioPorId,
   listarUsuarios,
   setUsuarioActivo,
+  sumarPuntajeRankingGeneral,
+  listarRankingGeneral,
+  eliminarUsuario,
   getMeta,
   setMeta,
   getCursoBancoMap,

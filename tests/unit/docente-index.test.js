@@ -67,11 +67,6 @@ describe('docente/index', () => {
     expect(mockEnviar).toHaveBeenCalledWith({ tipo: 'alternar_pausa' });
   });
 
-  test('reiniciarRankingGeneral envía mensaje', () => {
-    window.reiniciarRankingGeneral();
-    expect(mockEnviar).toHaveBeenCalledWith({ tipo: 'reiniciar_ranking_general' });
-  });
-
   test('iniciarJuego sin banco muestra error', () => {
     document.getElementById('banco-select').value = '';
     window.iniciarJuego();

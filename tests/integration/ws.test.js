@@ -1,6 +1,7 @@
 const http = require("http");
 const WebSocket = require("ws");
 const path = require("path");
+const crypto = require("node:crypto");
 const { resetTestDB } = require("../helpers/db");
 
 const TMP_DB = path.join(__dirname, '..', '..', 'tmp-test-ws.db');
@@ -109,6 +110,93 @@ describe("WebSocket — flujo del juego", () => {
 
       await closeWS(alumno1.ws);
       await closeWS(alumno2ws);
+      await closeWS(docente.ws);
+    });
+  });
+
+  describe("baja de cuenta con sesión activa", () => {
+    it("elimina al jugador de la sala y cierra su conexión", () => {
+      const db = require("../../src/server/infra/db");
+      db.cargarDB();
+      const usuarioId = crypto.randomUUID();
+      const nombreUsuario = `baja_${usuarioId.slice(0, 8)}`;
+      db.crearUsuario({
+        id: usuarioId,
+        email: `${nombreUsuario}@alu.tecnica29de6.edu.ar`,
+        passwordHash: "hash",
+        nombreUsuario
+      });
+
+      const roomManager = server.app.ctx.roomManager;
+      const room = roomManager.getStates()[0];
+      const jugadorId = crypto.randomUUID();
+      const ws = { readyState: WebSocket.OPEN, send: jest.fn(), close: jest.fn(), terminate: jest.fn() };
+      room.estado.fase = "pregunta";
+      room.estado.totalJugadoresPregunta = 1;
+      room.estado.tokens = {};
+      room.estado.jugadores[jugadorId] = {
+        usuarioId,
+        nombre: nombreUsuario,
+        puntaje: 100,
+        puntajeGeneral: 100,
+        respondioActual: false,
+        online: true
+      };
+      room.estado.respuestasActuales[jugadorId] = 0;
+      room.estado.tokens[jugadorId] = "token";
+      room.alumnos.set(ws, jugadorId);
+      room.alumnoSocketPorId.set(jugadorId, ws);
+      room.wss.clients.add(ws);
+
+      db.eliminarUsuario(usuarioId);
+      const eliminados = roomManager.eliminarUsuarioDeSalas(usuarioId, nombreUsuario);
+
+      expect(eliminados).toBe(1);
+      expect(room.estado.jugadores).not.toHaveProperty(jugadorId);
+      expect(room.estado.respuestasActuales).not.toHaveProperty(jugadorId);
+      expect(room.estado.tokens).not.toHaveProperty(jugadorId);
+      expect(room.alumnos.has(ws)).toBe(false);
+      expect(ws.close).toHaveBeenCalledWith(4001, "Cuenta eliminada");
+    });
+  });
+
+  describe("ranking general por cuenta institucional", () => {
+    it("guarda puntos al responder y los mantiene al desactivar la cuenta", async () => {
+      const db = require("../../src/server/infra/db");
+      db.cargarDB();
+      const usuarioId = crypto.randomUUID();
+      const nombreUsuario = `ranking_${usuarioId.slice(0, 8)}`;
+      db.crearUsuario({
+        id: usuarioId,
+        email: `${nombreUsuario}@alu.tecnica29de6.edu.ar`,
+        passwordHash: "hash",
+        nombreUsuario
+      });
+      const docente = await connectDocente(wsUrl, ADMIN_TOKEN);
+      const alumnoWs = await new Promise((resolve, reject) => {
+        const ws = new WebSocket(wsUrl, {
+          headers: { cookie: `historia_quiz_uid=${signId(usuarioId, config.COOKIE_SECRET)}` }
+        });
+        ws.once("open", () => resolve(ws));
+        ws.once("error", reject);
+      });
+      const alumnoMessages = createCollector(alumnoWs);
+      alumnoWs.send(JSON.stringify({ tipo: "alumno_entra", nombre: "no-se-usa" }));
+      const bienvenida = await waitFor(alumnoMessages, (msg) => msg.tipo === "bienvenido");
+      const room = server.app.state;
+      expect(room.estado.jugadores[bienvenida.id].usuarioId).toBe(usuarioId);
+
+      room.estado.fase = "pregunta";
+      room.estado.preguntasActivas = [{ pregunta: "¿Correcta?", opciones: ["Sí", "No"], correcta: 0 }];
+      room.estado.preguntaIdx = 0;
+      room.estado.respuestasActuales = { [bienvenida.id]: 0 };
+      require("../../src/server/application/game-session").mostrarResultado(room);
+
+      expect(db.listarRankingGeneral().find((entry) => entry.id === usuarioId).puntajeGeneral).toBe(100);
+      db.setUsuarioActivo(usuarioId, false);
+      expect(db.listarRankingGeneral().find((entry) => entry.id === usuarioId).puntajeGeneral).toBe(100);
+
+      await closeWS(alumnoWs);
       await closeWS(docente.ws);
     });
   });
@@ -987,22 +1075,6 @@ describe("WebSocket — flujo del juego", () => {
       const lobbyAlumno = await waitFor(alumno.messages, (m) => m.tipo === "volver_a_lobby");
       expect(lobbyDocente).toBeTruthy();
       expect(lobbyAlumno).toBeTruthy();
-
-      await closeWS(alumno.ws);
-      await closeWS(docente.ws);
-    });
-  });
-
-  describe("edge cases — reiniciar ranking general", () => {
-    it("debería reiniciar el ranking general", async () => {
-      const docente = await connectDocente(wsUrl);
-      const alumno = await connectAlumno(wsUrl, "Rank Test");
-
-      docente.ws.send(JSON.stringify({ tipo: "reiniciar_ranking_general" }));
-
-      const reinicio = await waitFor(docente.messages, (m) => m.tipo === "ranking_general_reiniciado");
-      // Ranking general includes all players with 0 after reset
-      expect(reinicio.rankingGeneral.every(j => j.puntajeGeneral === 0)).toBe(true);
 
       await closeWS(alumno.ws);
       await closeWS(docente.ws);

@@ -175,8 +175,10 @@
 
     <div id="import-csv">
       <p style="font-size:13px;color:var(--muted);margin-bottom:12px">
-        El CSV debe tener columnas separadas por <strong>punto y coma (;)</strong> en este orden:<br>
-        <code style="color:var(--gold)">pregunta ; opcionA ; opcionB ; opcionC ; opcionD ; correcta (A/B/C/D) ; epoca</code>
+        Se aceptan CSV con <strong>punto y coma (;)</strong>. El formato anterior de 7 columnas sigue siendo válido.<br>
+        Para tipos especiales usá 11 columnas:<br>
+        <code style="color:var(--gold)">tipo ; pregunta ; opcionA ; opcionB ; opcionC ; opcionD ; correcta ; epoca ; materia ; mediaTipo ; mediaUrl</code><br>
+        <small>tipo: multiple_choice, true_false, completion o media. En verdadero/falso dejá C y D vacías. Para media, mediaTipo es image o audio y mediaUrl apunta al recurso.</small>
       </p>
       <div class="drop-zone" id="drop-zone" data-action="trigger-file-input">
         <div style="font-size:28px">📂</div>

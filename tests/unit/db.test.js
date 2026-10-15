@@ -1,4 +1,5 @@
 const path = require("path");
+const crypto = require("node:crypto");
 const { resetTestDB } = require("../helpers/db");
 
 const TMP_DB = path.join(__dirname, "..", "..", "tmp-test-db-unit.db");
@@ -105,6 +106,92 @@ describe("lib/db", () => {
       const recargado = db.cargarDB();
       expect(recargado.bancos.length).toBe(1);
       expect(recargado.bancos[0].id).toBe("solo_uno");
+    });
+  });
+
+  describe("ranking general persistente y baja de cuenta", () => {
+    function crearUsuario() {
+      const id = crypto.randomUUID();
+      const nombre = `ranking_${id.slice(0, 8)}`;
+      db.crearUsuario({
+        id,
+        email: `${nombre}@alu.tecnica29de6.edu.ar`,
+        passwordHash: "hash",
+        nombreUsuario: nombre
+      });
+      return { id, nombre };
+    }
+
+    it("conserva los puntos aunque la cuenta esté desactivada", () => {
+      db.cargarDB();
+      const usuario = crearUsuario();
+      db.sumarPuntajeRankingGeneral(usuario.id, 300);
+      db.sumarPuntajeRankingGeneral(usuario.id, 100);
+      db.setUsuarioActivo(usuario.id, false);
+
+      expect(db.listarRankingGeneral()).toContainEqual({
+        id: usuario.id,
+        nombre: usuario.nombre,
+        puntajeGeneral: 400
+      });
+    });
+
+    it("recupera puntajes acumulados de sesiones antiguas al abrir la base", () => {
+      db.cargarDB();
+      const usuario = crearUsuario();
+      db.guardarEstado({
+        fase: "fin",
+        preguntaIdx: 0,
+        tiempoRestante: 0,
+        tiempoPorPregunta: 20,
+        pausado: false,
+        totalJugadoresPregunta: 1,
+        jugadores: { jugadorAntiguo: { nombre: usuario.nombre, puntajeGeneral: 650 } },
+        respuestasActuales: {},
+        preguntasActivas: [],
+        tokens: {}
+      });
+      db.closeDB();
+      db.cargarDB();
+
+      expect(db.listarRankingGeneral()).toContainEqual({
+        id: usuario.id,
+        nombre: usuario.nombre,
+        puntajeGeneral: 650
+      });
+    });
+
+    it("eliminarUsuario borra su ranking y la identidad de sus snapshots", () => {
+      db.cargarDB();
+      const usuario = crearUsuario();
+      db.sumarPuntajeRankingGeneral(usuario.id, 900);
+      const estado = {
+        fase: "fin",
+        preguntaIdx: 0,
+        tiempoRestante: 0,
+        tiempoPorPregunta: 20,
+        pausado: false,
+        totalJugadoresPregunta: 1,
+        codigoPartida: "123456",
+        jugadores: {
+          jugadorCuenta: { usuarioId: usuario.id, nombre: usuario.nombre, puntajeGeneral: 900 },
+          jugadorInvitado: { nombre: "Invitado", puntajeGeneral: 100 }
+        },
+        respuestasActuales: { jugadorCuenta: 0 },
+        preguntasActivas: [],
+        tokens: { jugadorCuenta: "token" }
+      };
+      db.guardarEstado(estado);
+      db.guardarEstadoAula(estado);
+
+      expect(db.eliminarUsuario(usuario.id)).toBe(true);
+      expect(db.buscarUsuarioPorId(usuario.id)).toBeNull();
+      expect(db.listarRankingGeneral().some((item) => item.id === usuario.id)).toBe(false);
+      expect(db.cargarEstado().jugadores).not.toHaveProperty("jugadorCuenta");
+      const estadoAula = db.cargarSesionesAulas()[0];
+      expect(estadoAula.jugadores).not.toHaveProperty("jugadorCuenta");
+      expect(estadoAula.jugadores).toHaveProperty("jugadorInvitado");
+      expect(db.eliminarUsuario(usuario.id)).toBe(false);
     });
   });
 

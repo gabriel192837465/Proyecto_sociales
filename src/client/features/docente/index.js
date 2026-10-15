@@ -67,7 +67,6 @@ const iniciarJuego = () => {
 const siguientePregunta = () => enviar("siguiente_pregunta");
 const forzarResultado = () => enviar("mostrar_resultado_manual");
 const alternarPausa = () => enviar("alternar_pausa");
-const reiniciarRankingGeneral = () => enviar("reiniciar_ranking_general");
 
 // Sección 6/12: el docente elige el curso (opcional) y crea la partida —
 // el servidor genera el código de 6 dígitos y, si el curso está mapeado a
@@ -108,7 +107,6 @@ if (typeof window !== "undefined" && typeof jest !== "undefined") {
   window.siguientePregunta = siguientePregunta;
   window.forzarResultado = forzarResultado;
   window.alternarPausa = alternarPausa;
-  window.reiniciarRankingGeneral = reiniciarRankingGeneral;
   window.crearPartida = crearPartida;
   window.autenticarDocente = autenticarDocente;
   window.exportarInformeCSV = exportarInformeCSV;
@@ -169,13 +167,6 @@ document.addEventListener("click", (e) => {
         window.forzarResultado();
       } else {
         forzarResultado();
-      }
-      break;
-    case "reiniciar-ranking-general":
-      if (typeof window !== "undefined" && typeof window.reiniciarRankingGeneral === "function") {
-        window.reiniciarRankingGeneral();
-      } else {
-        reiniciarRankingGeneral();
       }
       break;
     case "crear-partida":

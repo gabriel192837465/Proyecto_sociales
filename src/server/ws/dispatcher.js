@@ -12,7 +12,7 @@ const { handleSiguientePregunta, handleMostrarResultadoManual } = require("./han
 const { handleAlumnoEntra } = require("./handlers/alumno-entra");
 const { handleRespuesta } = require("./handlers/respuesta");
 const { handleAlternarPausa } = require("./handlers/pausar");
-const { handleVolverALobby, handleReiniciarRankingGeneral } = require("./handlers/volver-lobby");
+const { handleVolverALobby } = require("./handlers/volver-lobby");
 const { ejecutar: handleCambiarNombre } = require("./handlers/cambiar-nombre");
 const { handleRecuperarPartida } = require("./handlers/recuperar-partida");
 const { handleCrearPartida } = require("./handlers/crear-partida");
@@ -32,7 +32,6 @@ const handlers = {
   respuesta:                 handleRespuesta,
   alternar_pausa:            handleAlternarPausa,
   volver_a_lobby:            handleVolverALobby,
-  reiniciar_ranking_general: handleReiniciarRankingGeneral,
   cambiar_nombre:            handleCambiarNombre,
   recuperar_partida:         handleRecuperarPartida,
   crear_partida:             handleCrearPartida

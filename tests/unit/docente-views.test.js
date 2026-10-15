@@ -62,6 +62,12 @@ describe('docente/views', () => {
       actualizarRankingGeneral([{ id: '1', nombre: 'Bob', puntajeGeneral: 50 }]);
       expect(document.getElementById('ranking-general-lista').innerHTML).toContain('offline');
     });
+
+    test('actualizarRankingGeneral conserva cuentas inactivas sin puntos', () => {
+      syncJugadoresMap([{ id: '1', nombre: 'Ana', online: false }]);
+      actualizarRankingGeneral([{ id: '1', nombre: 'Ana', puntajeGeneral: 0 }]);
+      expect(document.getElementById('ranking-general-lista').innerHTML).toContain('Ana');
+    });
   });
 
   describe('jugadores-chips', () => {

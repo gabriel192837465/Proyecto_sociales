@@ -4,21 +4,24 @@
 jest.mock('../../src/client/features/admin/api-client.js', () => ({
   fetchUsuarios: jest.fn(),
   setUsuarioActivo: jest.fn(),
+  deleteUsuario: jest.fn(),
 }));
 jest.mock('../../src/client/features/admin/toast.js', () => ({
   toast: jest.fn(),
 }));
 
-const { fetchUsuarios, setUsuarioActivo } = require('../../src/client/features/admin/api-client.js');
+const { fetchUsuarios, setUsuarioActivo, deleteUsuario } = require('../../src/client/features/admin/api-client.js');
 const { toast } = require('../../src/client/features/admin/toast.js');
-const { mostrarUsuarios, toggleUsuarioActivo } = require('../../src/client/features/admin/usuarios.js');
+const { mostrarUsuarios, toggleUsuarioActivo, eliminarCuentaUsuario } = require('../../src/client/features/admin/usuarios.js');
 
 describe('admin/usuarios', () => {
   beforeEach(() => {
     document.body.innerHTML = `<div id="main-content"></div><div id="toast"></div>`;
     fetchUsuarios.mockReset();
     setUsuarioActivo.mockReset();
+    deleteUsuario.mockReset();
     toast.mockReset();
+    window.confirm = jest.fn(() => true);
   });
 
   test('mostrarUsuarios renderiza la tabla con las cuentas devueltas', async () => {
@@ -82,5 +85,23 @@ describe('admin/usuarios', () => {
     await toggleUsuarioActivo('u1', true);
 
     expect(toast).toHaveBeenCalledWith('Error: boom', 'err');
+  });
+
+  test('eliminarCuentaUsuario pide confirmación, elimina y refresca', async () => {
+    deleteUsuario.mockResolvedValue({ ok: true });
+    fetchUsuarios.mockResolvedValue({ usuarios: [] });
+    document.getElementById('main-content').innerHTML = `<div id="usuarios-tabla-wrap"></div>`;
+
+    await eliminarCuentaUsuario('u1', 'juanp');
+
+    expect(window.confirm).toHaveBeenCalledWith(expect.stringContaining('juanp'));
+    expect(deleteUsuario).toHaveBeenCalledWith('u1');
+    expect(toast).toHaveBeenCalledWith('Cuenta y datos eliminados.', 'ok');
+  });
+
+  test('eliminarCuentaUsuario no borra si se cancela la confirmación', async () => {
+    window.confirm.mockReturnValue(false);
+    await eliminarCuentaUsuario('u1', 'juanp');
+    expect(deleteUsuario).not.toHaveBeenCalled();
   });
 });

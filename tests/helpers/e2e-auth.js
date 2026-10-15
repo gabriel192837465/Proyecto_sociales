@@ -171,7 +171,16 @@ async function loginCuentaAlumno(page, { email, password }) {
   }
   await page.locator("#login-email").fill(email);
   await page.locator("#login-password").fill(password);
-  await page.locator("#btn-login").click({ force: true });
+  const loginResponsePromise = page.waitForResponse((response) => {
+    const request = response.request();
+    return new URL(response.url()).pathname === "/api/alumno/login" && request.method() === "POST";
+  });
+  await page.locator("#btn-login").click();
+  const loginResponse = await loginResponsePromise;
+  if (!loginResponse.ok()) {
+    const data = await loginResponse.json().catch(() => ({}));
+    throw new Error(`Login rechazado (${loginResponse.status()}): ${data.mensaje || data.error || "sin detalle"}`);
+  }
   await expect(page.locator("#s-unirse")).toBeVisible({ timeout: 5000 });
 }
 
